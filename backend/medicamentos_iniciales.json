@@ -1,0 +1,170 @@
+[
+  {
+    "codigo": 1,
+    "nombre": "Paracetamol 500 mg",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 45
+  },
+  {
+    "codigo": 2,
+    "nombre": "Ibuprofeno 400 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 9
+  },
+  {
+    "codigo": 3,
+    "nombre": "Amoxicilina 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 0
+  },
+  {
+    "codigo": 4,
+    "nombre": "Loratadina 10 mg",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 30
+  },
+  {
+    "codigo": 5,
+    "nombre": "Omeprazol 20 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 22
+  },
+  {
+    "codigo": 6,
+    "nombre": "Metformina 850 mg",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 12
+  },
+  {
+    "codigo": 7,
+    "nombre": "Losartán 50 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 5
+  },
+  {
+    "codigo": 8,
+    "nombre": "Enalapril 10 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 48
+  },
+  {
+    "codigo": 9,
+    "nombre": "Salbutamol inhalador",
+    "categoria": "Respiratorios",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 0
+  },
+  {
+    "codigo": 10,
+    "nombre": "Clotrimazol crema",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 18
+  },
+  {
+    "codigo": 11,
+    "nombre": "Sales de rehidratación oral",
+    "categoria": "Hidratación",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 22
+  },
+  {
+    "codigo": 12,
+    "nombre": "Sulfato ferroso",
+    "categoria": "Suplementos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 3
+  },
+  {
+    "codigo": 13,
+    "nombre": "Ácido fólico 5 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 90
+  },
+  {
+    "codigo": 14,
+    "nombre": "Vitamina C 500 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 15
+  },
+  {
+    "codigo": 15,
+    "nombre": "Cetirizina 10 mg",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 6
+  },
+  {
+    "codigo": 16,
+    "nombre": "Azitromicina 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 32
+  },
+  {
+    "codigo": 17,
+    "nombre": "Diclofenaco gel",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 41
+  },
+  {
+    "codigo": 18,
+    "nombre": "Acetaminofén suspensión",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 7
+  },
+  {
+    "codigo": 19,
+    "nombre": "Ranitidina (ejemplo)",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 0
+  },
+  {
+    "codigo": 20,
+    "nombre": "Hidrocortisona crema",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 12
+  },
+  {
+    "codigo": 21,
+    "nombre": "Naproxeno 250 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 19
+  },
+  {
+    "codigo": 22,
+    "nombre": "Nistatina suspensión",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 14
+  },
+  {
+    "codigo": 23,
+    "nombre": "Suero fisiológico 0.9%",
+    "categoria": "Soluciones",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 39
+  },
+  {
+    "codigo": 24,
+    "nombre": "Jeringas (demostración)",
+    "categoria": "Insumos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 60
+  }
+]
