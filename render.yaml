@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: medicuida-grupo1-demo
+    runtime: python
+    plan: free
+    buildCommand: echo "Sin dependencias externas de Python"
+    startCommand: python backend/server.py
+    envVars:
+      - key: MEDICUIDA_HOST
+        value: 0.0.0.0
+      - key: MEDICUIDA_NO_BROWSER
+        value: "1"
