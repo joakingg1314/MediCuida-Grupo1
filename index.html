@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="MediCuida: demostración académica de consulta de disponibilidad y gestión inclusiva de medicamentos." />
+  <title>MediCuida | Grupo 1 · MINSA (demo académica)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <!-- El login se comprueba en el servidor local; no es una plataforma médica real. -->
+  <section id="pantalla-login" class="login-layout" aria-labelledby="login-title">
+    <div class="login-side">
+      <div class="brand brand-light"><span class="brand-icon" aria-hidden="true">+</span><span>MediCuida</span></div>
+      <div class="login-side-content">
+        <span class="eyebrow light">PROYECTO UNIVERSITARIO · GRUPO 1</span>
+        <h1>Información más clara.<br />Atención más cercana.</h1>
+        <p>Consulta la disponibilidad demostrativa de medicamentos, conoce los establecimientos y explora herramientas inclusivas de seguimiento.</p>
+        <div class="login-points"><span>✓ Información organizada</span><span>✓ Accesibilidad</span><span>✓ Panel de disponibilidad</span></div>
+      </div>
+      <p class="small light-opacity">Interacción Humano-Computador · UPN · Prototipo</p>
+    </div>
+    <div class="login-center">
+      <div class="login-card auth-card">
+        <span class="pill"><span class="dot"></span> Acceso de demostración</span>
+        <div class="auth-switch" role="tablist" aria-label="Opciones de acceso">
+          <button id="tab-login" class="auth-tab active" type="button" data-auth="login" role="tab" aria-selected="true">Iniciar sesión</button>
+          <button id="tab-registro" class="auth-tab" type="button" data-auth="registro" role="tab" aria-selected="false">Registrarse</button>
+        </div>
+
+        <div id="panel-login" class="auth-panel">
+          <h2 id="login-title">Iniciar sesión</h2>
+          <p>Ingresa con tu DNI y la contraseña que registraste.</p>
+          <form id="form-login" autocomplete="off">
+            <label for="dni-login">DNI</label>
+            <input id="dni-login" name="dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Ingresa tu DNI" autocomplete="username" required />
+            <label for="contrasena-login">Contraseña</label>
+            <div class="password-field"><input id="contrasena-login" name="contrasena" type="password" placeholder="Escribe tu contraseña" autocomplete="current-password" required /><button id="ver-clave" class="password-toggle" type="button" aria-label="Mostrar contraseña">Ver</button></div>
+            <p id="error-login" class="form-error" role="alert" aria-live="polite" hidden></p>
+            <button type="submit" class="btn btn-primary btn-full">Ingresar al sistema <span aria-hidden="true">→</span></button>
+          </form>
+        </div>
+
+        <div id="panel-registro" class="auth-panel" hidden>
+          <h2>Crear usuario</h2>
+          <p>Registra una cuenta para ingresar luego con tu DNI.</p>
+          <form id="form-registro" autocomplete="off">
+            <label for="reg-nombres">Nombres</label>
+            <input id="reg-nombres" name="nombres" type="text" placeholder="Ej.: María Fernanda" required />
+            <label for="reg-apellidos">Apellidos</label>
+            <input id="reg-apellidos" name="apellidos" type="text" placeholder="Ej.: Pérez Gómez" required />
+            <label for="reg-dni">DNI</label>
+            <input id="reg-dni" name="dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="8 dígitos" required />
+            <label for="reg-email">Correo electrónico</label>
+            <input id="reg-email" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="email" required />
+            <label for="reg-clave">Nueva contraseña</label>
+            <div class="password-field"><input id="reg-clave" name="contrasena" type="password" placeholder="Crea tu contraseña" autocomplete="new-password" required /><button id="ver-clave-reg" class="password-toggle" type="button" aria-label="Mostrar contraseña de registro">Ver</button></div>
+            <p id="error-registro" class="form-error" role="alert" aria-live="polite" hidden></p>
+            <p id="ok-registro" class="form-feedback" aria-live="polite"></p>
+            <button type="submit" class="btn btn-primary btn-full">Registrar usuario</button>
+          </form>
+        </div>
+
+        <p class="security-note">Inicio de sesión validado por un servidor local de demostración. No ingresar información médica real.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="aplicacion" hidden>
+    <header class="site-header">
+      <div class="header-inner">
+        <button type="button" class="logo-button" data-view="inicio" aria-label="MediCuida: ir a inicio"><span class="brand-icon" aria-hidden="true">+</span><span>Medi<span class="text-blue">Cuida</span><small>GRUPO 1 · DEMO</small></span></button>
+        <nav class="main-nav" aria-label="Navegación principal">
+          <button type="button" data-view="inicio" class="nav-link active" aria-current="page">Inicio</button>
+          <button type="button" data-view="consulta" class="nav-link">Disponibilidad</button>
+          <button type="button" data-view="dashboard" class="nav-link">Dashboard</button>
+          <button type="button" data-view="inventario" class="nav-link">Administrar stock</button>
+          <button type="button" data-view="tratamientos" class="nav-link">Mis medicamentos</button>
+          <button type="button" data-view="historial" class="nav-link">Historial</button>
+          <button type="button" data-view="ayuda" class="nav-link">Ayuda</button>
+          <button type="button" data-view="perfil" class="nav-link">Accesibilidad</button>
+        </nav>
+        <div class="user-actions"><span class="user-chip">◉ <span id="usuario-chip">Usuario</span></span><button id="cerrar-sesion" type="button" class="btn btn-outline btn-sm">Salir</button></div>
+      </div>
+    </header>
+    <main id="contenido" tabindex="-1">
+      <!-- LANDING PAGE -->
+      <section class="view" id="vista-inicio" aria-labelledby="inicio-titulo">
+        <div class="hero">
+          <div class="container hero-grid">
+            <div>
+              <span class="eyebrow">PLATAFORMA INCLUSIVA · ORIENTACIÓN CIUDADANA</span>
+              <h1 id="inicio-titulo">La información de medicamentos, <span class="accent">más cerca de ti.</span></h1>
+              <p class="hero-description">Explora una consulta demostrativa de existencias, revisa establecimientos y organiza tratamientos de prueba desde una interfaz sencilla y accesible.</p>
+              <div class="hero-buttons"><button class="btn btn-primary" type="button" data-view="consulta">Consultar medicamentos <span aria-hidden="true">→</span></button><button class="btn btn-white" type="button" data-view="dashboard">Ver dashboard <span aria-hidden="true">↗</span></button></div>
+              <div class="hero-foot"><span>✓ Navegación con teclado</span><span>✓ Diseño adaptable</span><span>✓ Datos solo de ejemplo</span></div>
+            </div>
+            <aside class="hero-visual" aria-label="Resumen de demostración">
+              <div class="floating-icon" aria-hidden="true">✚</div>
+              <span class="eyebrow">CONSULTA INFORMATIVA</span>
+              <h2>Consulta en segundos</h2>
+              <p>Busca un medicamento y revisa su estado en nuestros registros simulados.</p>
+              <div class="mini-search"><span aria-hidden="true">⌕</span><span>¿Qué medicamento buscas?</span></div>
+              <div class="hero-summary"><div><span class="status-mark ok"></span><span>Disponible</span></div><div><span class="status-mark warning"></span><span>Stock crítico</span></div><div><span class="status-mark off"></span><span>Sin stock</span></div></div>
+              <div class="visual-caption">Información ilustrativa, no stock en tiempo real</div>
+            </aside>
+          </div>
+        </div>
+        <div class="container section-spaced">
+          <div class="section-head"><div><span class="eyebrow">CÓMO FUNCIONA</span><h2>Todo lo esencial en un lugar</h2></div><p>Información clara para pacientes y cuidadores, sin procedimientos complicados.</p></div>
+          <div class="feature-grid">
+            <article class="feature-card"><div class="feature-icon blue">⌕</div><h3>Búsqueda de medicamentos</h3><p>Localiza medicamentos de muestra por nombre, categoría o establecimiento.</p><button type="button" class="text-link" data-view="consulta">Buscar ahora →</button></article>
+            <article class="feature-card"><div class="feature-icon green">▥</div><h3>Consulta de disponibilidad</h3><p>Revisa cantidades simuladas y diferencia estados con texto, no solo colores.</p><button type="button" class="text-link" data-view="dashboard">Ver indicadores →</button></article>
+            <article class="feature-card"><div class="feature-icon purple">♡</div><h3>Orientación y accesibilidad</h3><p>Obtén información de uso de la demo y ajusta texto, contraste y lectura.</p><button type="button" class="text-link" data-view="ayuda">Ver orientación →</button></article>
+          </div>
+        </div>
+</section>
+
+      <!-- CONSULTA DE STOCK -->
+      <section class="view" id="vista-consulta" aria-labelledby="consulta-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">CONSULTA DE MEDICAMENTOS</span><h1 id="consulta-titulo">Disponibilidad de medicamentos</h1><p>Encuentra registros ficticios y consulta su estado por establecimiento.</p></div>
+        <div class="container page-body">
+          <form class="filter-panel" id="form-consulta" role="search">
+            <div class="field grow"><label for="buscar-stock">Nombre o código</label><input id="buscar-stock" type="search" placeholder="Ej.: paracetamol o MED-001" /></div>
+            <div class="field"><label for="categoria-consulta">Categoría</label><select id="categoria-consulta"><option value="">Todas las categorías</option></select></div>
+            <div class="field"><label for="establecimiento-consulta">Establecimiento</label><select id="establecimiento-consulta"><option value="">Todos los establecimientos</option></select></div>
+            <button class="btn btn-primary align-end" type="submit">Buscar</button>
+          </form>
+          <div class="result-heading"><div><h2>Resultados de la consulta</h2><p id="total-resultados" aria-live="polite">Cargando registros…</p></div><button class="btn btn-soft btn-sm" type="button" id="limpiar-consulta">Limpiar filtros</button></div>
+          <div id="resultados-stock" class="result-grid" aria-live="polite"></div>
+          <p class="subtle-note">Los registros y las cantidades se crearon exclusivamente para mostrar el funcionamiento del prototipo. Verifica la disponibilidad real con el establecimiento de salud.</p>
+        </div>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section class="view" id="vista-dashboard" aria-labelledby="dashboard-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">PANEL DE CONTROL</span><h1 id="dashboard-titulo">Dashboard de disponibilidad</h1><p>Explora indicadores y gráficos calculados sobre un inventario académico ficticio.</p></div>
+        <div class="container page-body">
+          <div class="filter-panel dashboard-filters"><div class="field"><label for="categoria-dashboard">Filtrar por categoría</label><select id="categoria-dashboard"><option value="">Todas las categorías</option></select></div><div class="field"><label for="establecimiento-dashboard">Filtrar por establecimiento</label><select id="establecimiento-dashboard"><option value="">Todos los establecimientos</option></select></div><button class="btn btn-soft align-end" id="reiniciar-dashboard" type="button">Restablecer filtros</button></div>
+          <div class="metric-grid" aria-live="polite">
+            <article class="metric-card"><div class="metric-icon ic-blue">▤</div><p>Medicamentos registrados</p><strong id="metric-total">0</strong><small>Registros de la selección</small></article>
+            <article class="metric-card"><div class="metric-icon ic-green">✓</div><p>Medicamentos disponibles</p><strong id="metric-disponibles">0</strong><small>Incluye stock crítico (&gt; 0)</small></article>
+            <article class="metric-card"><div class="metric-icon ic-orange">!</div><p>Medicamentos con stock crítico</p><strong id="metric-criticos">0</strong><small>De 1 a 10 unidades de ejemplo</small></article>
+            <article class="metric-card"><div class="metric-icon ic-purple">%</div><p>Porcentaje de disponibilidad</p><strong id="metric-porcentaje">0%</strong><small>Con stock / registros totales</small></article>
+          </div>
+          <div class="chart-grid">
+            <article class="chart-card"><div class="chart-heading"><h2>Medicamentos por categoría</h2><p>Cantidad de registros del filtro actual</p></div><div id="grafico-categorias" class="bar-chart" role="img" aria-label="Gráfico de barras de medicamentos por categoría"></div></article>
+            <article class="chart-card"><div class="chart-heading"><h2>Distribución por disponibilidad</h2><p>Disponible, stock crítico o sin stock</p></div><div class="donut-layout"><div id="grafico-dona" class="donut" role="img" aria-label="Gráfico circular de distribución de disponibilidad"><div class="donut-hole"><strong id="total-dona">0</strong><small>registros</small></div></div><div id="leyenda-dona" class="donut-legend"></div></div></article>
+            <article class="chart-card chart-wide"><div class="chart-heading"><h2>Evolución de existencias</h2><p>Serie ilustrativa de los últimos seis períodos; no representa un histórico real</p></div><div class="line-chart-wrap"><svg id="grafico-evolucion" class="line-chart" viewBox="0 0 760 260" role="img" aria-label="Evolución ficticia de existencias en seis períodos" preserveAspectRatio="xMidYMid meet"></svg></div><div id="resumen-evolucion" class="chart-foot" aria-live="polite"></div></article>
+          </div>
+          <p class="subtle-note">Estados definidos para esta demo: disponible si hay más de 10 unidades, crítico entre 1 y 10, sin stock si hay 0. No usar estos umbrales para decisiones de abastecimiento reales.</p>
+        </div>
+      </section>
+
+      <!-- INVENTARIO PERSISTENTE (SQLite en el servidor local) -->
+      <section class="view" id="vista-inventario" aria-labelledby="inventario-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">INVENTARIO DEMOSTRATIVO · ADMINISTRACIÓN</span><h1 id="inventario-titulo">Administrar medicamentos</h1><p>Agrega, edita o elimina registros de stock. Los cambios quedan guardados en la base de datos SQLite del servidor.</p></div>
+        <div class="container page-body">
+          <div class="two-column inventory-layout">
+            <article class="content-card">
+              <h2 id="med-form-title">Agregar medicamento</h2>
+              <p>Completa los datos del registro ficticio. Para editar, pulsa «Editar» junto al medicamento.</p>
+              <form id="form-inventario" class="vertical-form">
+                <input type="hidden" id="med-id" />
+                <div class="field"><label for="med-nombre">Nombre del medicamento *</label><input id="med-nombre" name="nombre" type="text" required minlength="2" maxlength="90" placeholder="Ej.: Paracetamol 500 mg" /></div>
+                <div class="field"><label for="med-categoria">Categoría *</label><input id="med-categoria" name="categoria" list="lista-categorias" required minlength="2" maxlength="65" placeholder="Ej.: Analgésicos" /><datalist id="lista-categorias"></datalist></div>
+                <div class="field"><label for="med-establecimiento">Establecimiento *</label><input id="med-establecimiento" name="establecimiento" list="lista-establecimientos" required minlength="2" maxlength="110" placeholder="Ej.: Centro de Salud San Borja" /><datalist id="lista-establecimientos"></datalist></div>
+                <div class="field"><label for="med-stock">Unidades en stock *</label><input id="med-stock" name="stock" type="number" min="0" max="1000000" step="1" required placeholder="Ej.: 25" /></div>
+                <div class="inventory-form-actions"><button id="med-guardar" class="btn btn-primary" type="submit">Agregar medicamento</button><button id="med-cancelar" class="btn btn-soft" type="button" hidden>Cancelar edición</button></div>
+                <p id="med-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+              </form>
+            </article>
+            <aside class="content-card tips-card"><span class="eyebrow">ALMACENAMIENTO REAL DE PRUEBA</span><h2>Los datos sí se guardan</h2><ol class="steps"><li>Agrega un registro con nombre, categoría, establecimiento y stock.</li><li>Comprueba que aparezca en la tabla y en «Disponibilidad».</li><li>Edita o elimina el registro y revisa los cambios en el dashboard.</li></ol><div class="notice">Los datos son ficticios. El archivo <strong>backend/datos/medicuida.sqlite3</strong> se crea automáticamente al iniciar el servidor y conserva los cambios.</div></aside>
+          </div>
+          <div class="result-heading"><div><h2>Listado de inventario</h2><p id="inventario-total" aria-live="polite">Cargando registros…</p></div><button id="actualizar-inventario" class="btn btn-soft btn-sm" type="button">Actualizar listado</button></div>
+          <div class="table-scroll"><table class="data-table"><thead><tr><th>Código</th><th>Medicamento</th><th>Categoría</th><th>Establecimiento</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-inventario"></tbody></table></div>
+          <p class="subtle-note">Eliminar borra el registro del inventario. Esta administración no modifica los tratamientos personales de ejemplo del navegador.</p>
+        </div>
+      </section>
+
+      <!-- GESTIÓN PERSONAL: CARACTERÍSTICA ADICIONAL DEL SITIO ANTERIOR -->
+      <section class="view" id="vista-tratamientos" aria-labelledby="tratamientos-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">GESTIÓN PERSONAL · DEMOSTRACIÓN</span><h1 id="tratamientos-titulo">Mis medicamentos</h1><p>Registra un tratamiento ficticio y marca las tomas completadas. Los datos se guardan solo en este navegador.</p></div>
+        <div class="container page-body">
+          <div class="two-column">
+            <article class="content-card"><h2>Registrar un medicamento</h2><p>Introduce únicamente información de ejemplo, no tratamientos reales.</p>
+              <form id="form-tratamiento" class="vertical-form">
+                <div class="field"><label for="trat-nombre">Nombre del medicamento *</label><input id="trat-nombre" name="nombre" required maxlength="65" placeholder="Ej.: Medicamento de prueba" /></div>
+                <div class="form-row"><div class="field"><label for="trat-forma">Forma farmacéutica *</label><select id="trat-forma" name="forma" required><option value="">Seleccionar</option><option>Tableta</option><option>Cápsula</option><option>Jarabe</option><option>Gotas</option><option>Otro</option></select></div><div class="field"><label for="trat-dosis">Dosis indicada (texto) *</label><input id="trat-dosis" name="dosis" maxlength="50" placeholder="Dato de ejemplo" required /></div></div>
+                <div class="form-row"><div class="field"><label for="trat-inicio">Fecha de inicio *</label><input id="trat-inicio" type="date" name="inicio" required /></div><div class="field"><label for="trat-fin">Fecha de fin *</label><input id="trat-fin" type="date" name="fin" required /></div></div>
+                <div class="form-row"><div class="field"><label for="trat-frecuencia">Tomas diarias de ejemplo *</label><select id="trat-frecuencia" name="frecuencia"><option value="1">1 toma por día</option><option value="2">2 tomas por día</option><option value="3">3 tomas por día</option></select></div><div class="field"><label for="trat-hora">Hora inicial *</label><input id="trat-hora" type="time" name="hora" value="08:00" required /></div></div>
+                <button class="btn btn-primary btn-full" type="submit">Guardar tratamiento de prueba</button><p class="form-feedback" id="trat-feedback" role="status" aria-live="polite"></p>
+              </form>
+            </article>
+            <aside class="content-card tips-card"><span class="eyebrow">INSTRUCCIONES</span><h2>Un paso a la vez</h2><ol class="steps"><li>Registra el medicamento de demostración.</li><li>Selecciona horarios ilustrativos según un ejemplo dado.</li><li>Confirma tomas y comprueba su registro en Historial.</li></ol><div class="notice">Esta página no prescribe dosis ni determina horarios seguros. Los intervalos son solo para practicar las funciones de la interfaz.</div></aside>
+          </div>
+          <div class="result-heading"><div><h2>Tratamientos guardados</h2><p>Elige «Confirmar toma» para comprobar la interacción y la persistencia local.</p></div></div>
+          <div id="lista-tratamientos" class="treatments-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- HISTORIAL -->
+      <section class="view" id="vista-historial" aria-labelledby="historial-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">REGISTROS DE LA DEMOSTRACIÓN</span><h1 id="historial-titulo">Historial de tomas</h1><p>Consulta las tomas que confirmaste en este navegador.</p></div>
+        <div class="container page-body"><div class="result-heading"><div><h2>Tomas confirmadas</h2><p id="historial-total" aria-live="polite">0 registros</p></div><button type="button" id="exportar-csv" class="btn btn-primary">Descargar historial CSV</button></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Medicamento</th><th>Horario programado</th><th>Fecha de confirmación</th><th>Estado</th></tr></thead><tbody id="tabla-historial"></tbody></table></div><p id="historial-vacio" class="empty-state" hidden>No hay tomas confirmadas. Puedes crear un tratamiento de prueba en «Mis medicamentos».</p></div>
+      </section>
+
+      <!-- ORIENTACIÓN Y FAQ -->
+      <section class="view" id="vista-ayuda" aria-labelledby="ayuda-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">ORIENTACIÓN PARA EL USUARIO</span><h1 id="ayuda-titulo">Centro de ayuda</h1><p>Preguntas frecuentes y recomendaciones para utilizar esta demostración con claridad.</p></div>
+        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>¿Cómo consultar disponibilidad?</h2><ol class="steps"><li>Entra a «Disponibilidad».</li><li>Escribe el nombre o código del medicamento.</li><li>Selecciona una categoría y un establecimiento si deseas filtrar.</li><li>Revisa el estado que aparece junto a cada registro.</li></ol><button type="button" class="btn btn-primary" data-view="consulta">Realizar una búsqueda →</button></article><article class="content-card"><h2>¿Cómo interpretar los estados?</h2><div class="status-guide"><div><span class="status-badge available">Disponible</span><p>Más de 10 unidades simuladas.</p></div><div><span class="status-badge critical">Stock crítico</span><p>Entre 1 y 10 unidades simuladas.</p></div><div><span class="status-badge unavailable">Sin stock</span><p>0 unidades simuladas.</p></div></div></article></div>
+          <div class="faq-section"><div class="section-head"><div><span class="eyebrow">RESPUESTAS RÁPIDAS</span><h2>Preguntas frecuentes</h2></div></div>
+            <details><summary>¿La disponibilidad mostrada es real y actualizada?</summary><p>No. Los registros son ficticios y se incluyen únicamente para la práctica académica. Consulta directamente con el establecimiento para conocer disponibilidad real.</p></details>
+            <details><summary>¿Es una página oficial del MINSA?</summary><p>No. Es un prototipo universitario elaborado para demostrar conocimientos de desarrollo web e Interacción Humano-Computador.</p></details>
+            <details><summary>¿Para qué sirven los filtros del dashboard?</summary><p>Permiten explorar los indicadores y gráficos de una categoría o establecimiento específico, tomando como base los datos ficticios incluidos en el proyecto.</p></details>
+            <details><summary>¿Dónde se guardan los medicamentos del inventario?</summary><p>En una base de datos SQLite del servidor local, dentro de backend/datos/medicuida.sqlite3. Los cambios sobreviven al cierre del navegador y al reinicio del servidor. Los tratamientos personales de ejemplo siguen guardándose en el navegador.</p></details>
+            <details><summary>¿Dónde se guardan mis tratamientos de prueba?</summary><p>En localStorage de este navegador y dispositivo. No se envían a un servidor ni se sincronizan. Puedes borrar todos los datos de prueba desde Accesibilidad.</p></details>
+            <details><summary>¿Puedo utilizar esta aplicación para un tratamiento verdadero?</summary><p>No. No es una historia clínica, no valida dosis y no ofrece información de stock verificable. Sigue siempre las indicaciones de un profesional sanitario.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERFIL Y ACCESIBILIDAD -->
+      <section class="view" id="vista-perfil" aria-labelledby="perfil-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema y gestiona los datos ficticios almacenados localmente.</p></div>
+        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><div class="notice">Sesión validada en el servidor local con cookie HttpOnly. Tus medicamentos del inventario se guardan en SQLite.</div><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los tratamientos y el historial de este navegador.</p><button type="button" id="borrar-datos" class="btn btn-danger">Restablecer datos de prueba</button></article></div></div>
+      </section>
+    </main>
+    <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>HTML5, CSS3, JavaScript y Python<br />Datos simulados · Prototipo no oficial</p></div></footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
