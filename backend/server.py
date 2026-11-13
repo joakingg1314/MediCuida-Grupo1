@@ -15,6 +15,7 @@ from http import HTTPStatus
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
+import seguimiento
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(__file__).resolve().parent / "datos"
@@ -192,6 +193,7 @@ class Handler(BaseHTTPRequestHandler):
         return True
     def do_GET(self):
         path=urlsplit(self.path).path
+        if seguimiento.dispatch(self,"GET",path,connect): return
         if path=="/api/sesion":
             session=self.current_session()
             return self.json_out(200,{"autenticado":bool(session),"usuario":session["usuario"] if session else None})
@@ -211,6 +213,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.valid_origin(): return self.json_out(403,{"error":"Origen no autorizado."})
         path=urlsplit(self.path).path
+        if seguimiento.dispatch(self,"POST",path,connect): return
         if path=="/api/logout":
             try:
                 cookies=SimpleCookie();cookies.load(self.headers.get("Cookie",""))
@@ -261,7 +264,9 @@ class Handler(BaseHTTPRequestHandler):
         return self.json_out(404,{"error":"Ruta no encontrada."})
     def do_PUT(self):
         if not self.valid_origin(): return self.json_out(403,{"error":"Origen no autorizado."})
-        m=MED_PATH.fullmatch(urlsplit(self.path).path)
+        path=urlsplit(self.path).path
+        if seguimiento.dispatch(self,"PUT",path,connect): return
+        m=MED_PATH.fullmatch(path)
         if not m: return self.json_out(404,{"error":"Ruta no encontrada."})
         if not self.auth_medico(): return
         try: data=validate_med(self.read_data())
@@ -273,7 +278,9 @@ class Handler(BaseHTTPRequestHandler):
         return self.json_out(200,{"medicamento":med(row),"mensaje":"Medicamento actualizado."})
     def do_DELETE(self):
         if not self.valid_origin(): return self.json_out(403,{"error":"Origen no autorizado."})
-        m=MED_PATH.fullmatch(urlsplit(self.path).path)
+        path=urlsplit(self.path).path
+        if seguimiento.dispatch(self,"DELETE",path,connect): return
+        m=MED_PATH.fullmatch(path)
         if not m: return self.json_out(404,{"error":"Ruta no encontrada."})
         if not self.auth_medico(): return
         with connect() as c: cur=c.execute("DELETE FROM medicamentos WHERE codigo=?",(int(m.group(1)),))
@@ -282,6 +289,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     init_db()
+    seguimiento.create_tables(connect)
     server=ThreadingHTTPServer((HOST,PORT),Handler)
     url=f"http://127.0.0.1:{PORT}"
     print("MediCuida Grupo 1",url,flush=True)
