@@ -92,7 +92,8 @@
 
   // ------------------------ REGISTRO E INICIO DE SESIÓN ------------------------
   function actualizarDatosUsuario(usuario) {
-    rolActual = usuario && ['paciente','cuidador','medico'].includes(usuario.rol) ? usuario.rol : null;
+    usuarioActual = usuario || null;
+    rolActual = usuario && ['paciente','cuidador','ambos','medico'].includes(usuario.rol) ? usuario.rol : null;
     actualizarNavegacionPorRol();
     const nombreCompleto = usuario ? `${usuario.nombres} ${usuario.apellidos}`.trim() : 'Usuario';
     $('#usuario-chip').textContent = nombreCompleto || 'Usuario';
@@ -100,13 +101,15 @@
     $('#perfil-apellidos').textContent = usuario?.apellidos || '-';
     $('#perfil-dni').textContent = usuario?.dni || '-';
     $('#perfil-correo').textContent = usuario?.correo || '-';
-    const nombresRoles = { paciente:'Paciente', cuidador:'Cuidador', medico:'Médico' };
+    const nombresRoles = { paciente:'Paciente', cuidador:'Cuidador', ambos:'Paciente y Cuidador', medico:'Médico' };
     $('#perfil-rol').textContent = nombresRoles[usuario?.rol] || '-';
     $('#perfil-cuidador').hidden = usuario?.rol !== 'cuidador';
     $('#perfil-medico').hidden = usuario?.rol !== 'medico';
     $('#perfil-dni-paciente').textContent = usuario?.dni_paciente || '-';
     $('#perfil-ruc').textContent = usuario?.ruc || '-';
     $('#perfil-puesto').textContent = usuario?.puesto || '-';
+    $('#perfil-cuidador').hidden = !['cuidador','ambos'].includes(usuario?.rol);
+    actualizarFormulariosPorRol();
   }
   function alternarAuth(modo) {
     const esLogin = modo === 'login';
