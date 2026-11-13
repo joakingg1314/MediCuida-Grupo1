@@ -6,6 +6,27 @@
   const TREAT_KEY = 'medicuida_tratamientos_demo_v1';
   const PREF_KEY = 'medicuida_preferencias_demo_v1';
   const VISTAS = ['inicio','consulta','dashboard','inventario','tratamientos','historial','ayuda','perfil'];
+  const VISTAS_NO_MEDICO = ['inicio','consulta','tratamientos','historial','ayuda','perfil'];
+  let rolActual = null;
+  const puedeAbrirVista = nombre => VISTAS.includes(nombre) && (rolActual === 'medico' || VISTAS_NO_MEDICO.includes(nombre));
+  function actualizarNavegacionPorRol() {
+    const medico = rolActual === 'medico';
+    $('[data-medico-only]').forEach(control => {
+      control.hidden = !medico;
+      control.disabled = !medico;
+      if (!medico) control.setAttribute('aria-hidden', 'true');
+      else control.removeAttribute('aria-hidden');
+    });
+    $('[data-paciente-cuidador]').forEach(control => {
+      control.hidden = medico;
+      control.disabled = medico;
+    });
+    if (!$('#aplicacion').hidden) {
+      const visible = $('.view').find(view => !view.hidden);
+      const nombre = visible?.id.replace('vista-', '');
+      if (nombre && !puedeAbrirVista(nombre)) mostrarVista('inicio');
+    }
+  }
   const ESTADOS = {
     disponible: { texto: 'Disponible', clase: 'available', color: '#199769' },
     critico: { texto: 'Stock crítico', clase: 'critical', color: '#e0a12f' },
@@ -71,6 +92,8 @@
 
   // ------------------------ REGISTRO E INICIO DE SESIÓN ------------------------
   function actualizarDatosUsuario(usuario) {
+    rolActual = usuario && ['paciente','cuidador','medico'].includes(usuario.rol) ? usuario.rol : null;
+    actualizarNavegacionPorRol();
     const nombreCompleto = usuario ? `${usuario.nombres} ${usuario.apellidos}`.trim() : 'Usuario';
     $('#usuario-chip').textContent = nombreCompleto || 'Usuario';
     $('#perfil-nombres').textContent = usuario?.nombres || '-';
@@ -207,17 +230,21 @@
 
   // ------------------------ NAVEGACIÓN ------------------------
   function mostrarVista(nombre) {
-    if (!VISTAS.includes(nombre) || $('#aplicacion').hidden) return;
+    if ($('#aplicacion').hidden || !VISTAS.includes(nombre)) return;
+    if (!puedeAbrirVista(nombre)) {
+      aviso('Tu rol no tiene acceso a esta sección.');
+      return;
+    }
     $$('.view').forEach(section => { section.hidden = section.id !== `vista-${nombre}`; });
     $$('.nav-link').forEach(button => {
-      const activo = button.dataset.view === nombre;
+      const activo = !button.hidden && button.dataset.view === nombre;
       button.classList.toggle('active', activo);
       if (activo) button.setAttribute('aria-current','page');
       else button.removeAttribute('aria-current');
     });
     if (nombre === 'consulta') mostrarResultados();
-    if (nombre === 'dashboard') mostrarDashboard();
-    if (nombre === 'inventario') mostrarInventario();
+    if (nombre === 'dashboard' && rolActual === 'medico') mostrarDashboard();
+    if (nombre === 'inventario' && rolActual === 'medico') mostrarInventario();
     if (nombre === 'tratamientos') mostrarTratamientos();
     if (nombre === 'historial') mostrarHistorial();
     window.scrollTo({top:0, behavior:'instant'});
@@ -262,8 +289,10 @@
     inventario = datos.medicamentos;
     actualizarOpcionesInventario();
     mostrarResultados();
-    mostrarDashboard();
-    mostrarInventario();
+    if (rolActual === 'medico') {
+      mostrarDashboard();
+      mostrarInventario();
+    }
   }
   function registrosFiltrados(categoria, establecimiento, busqueda = '') {
     const term = busqueda.trim().toLocaleLowerCase('es');
