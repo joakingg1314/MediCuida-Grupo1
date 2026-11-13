@@ -103,8 +103,8 @@
         <nav class="main-nav" aria-label="Navegación principal">
           <button type="button" data-view="inicio" class="nav-link active" aria-current="page">Inicio</button>
           <button type="button" data-view="consulta" class="nav-link">Disponibilidad</button>
-          <button type="button" data-view="dashboard" class="nav-link">Dashboard</button>
-          <button type="button" data-view="inventario" class="nav-link">Administrar stock</button>
+          <button type="button" data-view="dashboard" data-medico-only class="nav-link" hidden>Dashboard</button>
+          <button type="button" data-view="inventario" data-medico-only class="nav-link" hidden>Administrar stock</button>
           <button type="button" data-view="tratamientos" class="nav-link">Mis medicamentos</button>
           <button type="button" data-view="historial" class="nav-link">Historial</button>
           <button type="button" data-view="ayuda" class="nav-link">Ayuda</button>
@@ -122,7 +122,7 @@
               <span class="eyebrow">PLATAFORMA INCLUSIVA · ORIENTACIÓN CIUDADANA</span>
               <h1 id="inicio-titulo">La información de medicamentos, <span class="accent">más cerca de ti.</span></h1>
               <p class="hero-description">Explora una consulta demostrativa de existencias, revisa establecimientos y organiza tratamientos de prueba desde una interfaz sencilla y accesible.</p>
-              <div class="hero-buttons"><button class="btn btn-primary" type="button" data-view="consulta">Consultar medicamentos <span aria-hidden="true">→</span></button><button class="btn btn-white" type="button" data-view="dashboard">Ver dashboard <span aria-hidden="true">↗</span></button></div>
+              <div class="hero-buttons"><button class="btn btn-primary" type="button" data-view="consulta">Consultar medicamentos <span aria-hidden="true">→</span></button><button class="btn btn-white" type="button" data-view="dashboard" data-medico-only hidden>Ver dashboard <span aria-hidden="true">↗</span></button></div>
               <div class="hero-foot"><span>✓ Navegación con teclado</span><span>✓ Diseño adaptable</span><span>✓ Datos solo de ejemplo</span></div>
             </div>
             <aside class="hero-visual" aria-label="Resumen de demostración">
@@ -140,7 +140,7 @@
           <div class="section-head"><div><span class="eyebrow">CÓMO FUNCIONA</span><h2>Todo lo esencial en un lugar</h2></div><p>Información clara para pacientes y cuidadores, sin procedimientos complicados.</p></div>
           <div class="feature-grid">
             <article class="feature-card"><div class="feature-icon blue">⌕</div><h3>Búsqueda de medicamentos</h3><p>Localiza medicamentos de muestra por nombre, categoría o establecimiento.</p><button type="button" class="text-link" data-view="consulta">Buscar ahora →</button></article>
-            <article class="feature-card"><div class="feature-icon green">▥</div><h3>Consulta de disponibilidad</h3><p>Revisa cantidades simuladas y diferencia estados con texto, no solo colores.</p><button type="button" class="text-link" data-view="dashboard">Ver indicadores →</button></article>
+            <article class="feature-card"><div class="feature-icon green">▥</div><h3>Consulta de disponibilidad</h3><p>Revisa cantidades simuladas y diferencia estados con texto, no solo colores.</p><button type="button" class="text-link" data-view="dashboard" data-medico-only hidden>Ver indicadores →</button><button type="button" class="text-link" data-view="consulta" data-paciente-cuidador>Consultar existencias →</button></article>
             <article class="feature-card"><div class="feature-icon purple">♡</div><h3>Orientación y accesibilidad</h3><p>Obtén información de uso de la demo y ajusta texto, contraste y lectura.</p><button type="button" class="text-link" data-view="ayuda">Ver orientación →</button></article>
           </div>
         </div>
@@ -256,7 +256,7 @@
         <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Sesión validada mediante el backend con cookie HttpOnly. Tus medicamentos del inventario se guardan en SQLite.</div><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los tratamientos y el historial de este navegador.</p><button type="button" id="borrar-datos" class="btn btn-danger">Restablecer datos de prueba</button></article></div></div>
       </section>
     </main>
-    <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>HTML5, CSS3, JavaScript y Python<br />Datos simulados · Prototipo no oficial</p></div></footer>
+    <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>Tu bienestar, nuestra prioridad.</p></div></footer>
   </div>
   <div id="toast" role="status" aria-live="polite" hidden></div>
 </body>
