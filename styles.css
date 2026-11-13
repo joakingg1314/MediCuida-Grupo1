@@ -1449,3 +1449,48 @@ body.high-contrast p {
   .login-side{padding:26px}
   .login-side h1{font-size:2.1rem}
 }
+
+/* Seguimiento compartido, consulta por DNI y edición de demostración */
+[hidden] {display:none!important}
+textarea {
+  width:100%; min-width:0; resize:vertical; min-height:82px;
+  border:1px solid #d2e0ed; border-radius:10px;
+  font:inherit; color:var(--ink); padding:12px 14px;
+  background:white
+}
+.role-field-panel {border:1px solid #d6e8f3;background:#f5faff;padding:16px;border-radius:15px;margin-bottom:22px}
+.role-field-panel label,
+.linked-history label,
+#form-cambiar-rol label {display:block;font-weight:750;font-size:.9rem;margin:13px 0 6px}
+.role-field-panel input,
+.role-field-panel textarea,
+#form-cambiar-rol input,
+#form-cambiar-rol select {width:100%}
+.role-field-panel .btn {margin-top:11px}
+.field-help {color:#667e8c;font-size:.85rem;line-height:1.48;margin:9px 0 14px}
+.role-lookup {display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.role-lookup input {flex:1;min-width:200px}
+.linked-history {margin:0 0 22px}
+.treatment-actions {display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.notices-panel {margin:18px 0 25px}
+.medical-notice {padding:14px 16px;border:1px solid #cbe5f0;border-left:4px solid #1d74ba;border-radius:10px;background:#f6fbfe;margin-top:12px}
+.medical-notice strong {display:block;margin-bottom:5px}
+.medical-notice p {margin:0 0 6px}
+.medical-notice .btn {display:block;margin-top:11px}
+.edit-dialog {
+  width:min(720px,calc(100vw - 28px)); max-height:min(92vh,950px);
+  overflow-y:auto; border:1px solid #cddfeb;border-radius:17px;
+  padding:26px 28px; background:#fff;color:var(--ink);
+  box-shadow:0 24px 70px #12334d55;
+}
+.edit-dialog::backdrop {background:rgba(12,29,47,.67)}
+.edit-dialog h2 {margin-bottom:11px}
+.edit-dialog .vertical-form {display:grid;gap:12px}
+.edit-dialog .vertical-form label {display:block;font-weight:700;margin-bottom:5px}
+.row-buttons {display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+#form-cambiar-rol {margin-top:15px}
+@media (max-width:600px){
+  .edit-dialog {padding:17px}
+  .row-buttons .btn {flex:1}
+  .role-lookup .btn {width:100%}
+}
