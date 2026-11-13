@@ -43,7 +43,11 @@ def init_db():
             CREATE TABLE IF NOT EXISTS usuarios(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombres TEXT NOT NULL, apellidos TEXT NOT NULL, dni TEXT NOT NULL UNIQUE,
-                correo TEXT NOT NULL UNIQUE, salt TEXT NOT NULL, hash TEXT NOT NULL
+                correo TEXT NOT NULL UNIQUE, salt TEXT NOT NULL, hash TEXT NOT NULL,
+                rol TEXT NOT NULL DEFAULT 'paciente',
+                dni_paciente TEXT,
+                ruc TEXT,
+                puesto TEXT
             );
             CREATE TABLE IF NOT EXISTS medicamentos(
                 codigo INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,6 +56,16 @@ def init_db():
             );
             CREATE TABLE IF NOT EXISTS configuracion(clave TEXT PRIMARY KEY, valor TEXT);
         """)
+        # Migración compatible con usuarios registrados en versiones anteriores.
+        existing = {row["name"] for row in c.execute("PRAGMA table_info(usuarios)")}
+        for name, ddl in (
+            ("rol", "TEXT NOT NULL DEFAULT 'paciente'"),
+            ("dni_paciente", "TEXT"),
+            ("ruc", "TEXT"),
+            ("puesto", "TEXT"),
+        ):
+            if name not in existing:
+                c.execute(f"ALTER TABLE usuarios ADD COLUMN {name} {ddl}")
         if not c.execute("SELECT 1 FROM configuracion WHERE clave='seeded'").fetchone():
             path = ROOT / "backend" / "medicamentos_iniciales.json"
             meds = json.loads(path.read_text(encoding="utf-8"))
@@ -64,7 +78,7 @@ def med(row):
             "stock": row["stock"]}
 
 def user(row):
-    return {k: row[k] for k in ("nombres", "apellidos", "dni", "correo")}
+    return {k: row[k] for k in ("nombres", "apellidos", "dni", "correo", "rol", "dni_paciente", "ruc", "puesto")}
 
 def clean(value, field, minimum=2, maximum=90):
     if not isinstance(value, str):
@@ -84,7 +98,13 @@ def validate_med(data):
     return result
 
 def validate_user(data):
-    result = {"nombres": clean(data.get("nombres"),"nombres",2,80),
+    if not isinstance(data, dict):
+        raise ValueError("Los datos de registro deben enviarse como un objeto JSON.")
+    rol = data.get("rol")
+    if rol not in ("paciente", "cuidador", "medico"):
+        raise ValueError("Selecciona un rol válido: Paciente, Cuidador o Médico.")
+    result = {"rol": rol,
+              "nombres": clean(data.get("nombres"),"nombres",2,80),
               "apellidos": clean(data.get("apellidos"),"apellidos",2,100)}
     dni = data.get("dni")
     if not isinstance(dni,str) or not DNI.fullmatch(dni):
@@ -95,7 +115,21 @@ def validate_user(data):
     password = data.get("contrasena")
     if not isinstance(password,str) or not 8 <= len(password) <= 72 or password != password.strip():
         raise ValueError("La contraseña debe tener entre 8 y 72 caracteres, sin espacios al inicio o final.")
-    return {**result, "dni": dni, "correo": correo.strip().lower(), "contrasena":password}
+    datos_rol = {"dni_paciente": None, "ruc": None, "puesto": None}
+    if rol == "cuidador":
+        dni_paciente = data.get("dni_paciente")
+        if not isinstance(dni_paciente, str) or not DNI.fullmatch(dni_paciente):
+            raise ValueError("Ingresa el DNI de ocho dígitos del paciente.")
+        if dni_paciente == dni:
+            raise ValueError("El DNI del paciente debe ser diferente de tu DNI.")
+        datos_rol["dni_paciente"] = dni_paciente
+    if rol == "medico":
+        ruc = data.get("ruc")
+        if not isinstance(ruc, str) or not re.fullmatch(r"[0-9]{11}", ruc):
+            raise ValueError("El RUC del establecimiento debe tener exactamente 11 dígitos.")
+        datos_rol["ruc"] = ruc
+        datos_rol["puesto"] = clean(data.get("puesto"), "puesto", 2, 100)
+    return {**result, **datos_rol, "dni": dni, "correo": correo.strip().lower(), "contrasena":password}
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "MediCuidaDemo/3"
@@ -184,8 +218,10 @@ class Handler(BaseHTTPRequestHandler):
             digest=hashlib.pbkdf2_hmac("sha256",data["contrasena"].encode(),salt,200000).hex()
             try:
                 with connect() as c:
-                    c.execute("INSERT INTO usuarios(nombres,apellidos,dni,correo,salt,hash) VALUES(?,?,?,?,?,?)",
-                              (data["nombres"],data["apellidos"],data["dni"],data["correo"],salt.hex(),digest))
+                    c.execute("""INSERT INTO usuarios(nombres,apellidos,dni,correo,salt,hash,rol,dni_paciente,ruc,puesto)
+                                 VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                              (data["nombres"],data["apellidos"],data["dni"],data["correo"],
+                               salt.hex(),digest,data["rol"],data["dni_paciente"],data["ruc"],data["puesto"]))
             except sqlite3.IntegrityError as e:
                 error=str(e)
                 msg="Ese DNI ya está registrado." if "usuarios.dni" in error else "Ese correo ya está registrado." if "usuarios.correo" in error else "Error al registrar el usuario."
