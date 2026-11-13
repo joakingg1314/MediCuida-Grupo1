@@ -181,6 +181,15 @@ class Handler(BaseHTTPRequestHandler):
         if self.current_session(): return True
         self.json_out(HTTPStatus.UNAUTHORIZED,{"error":"Debes iniciar sesión."})
         return False
+    def auth_medico(self):
+        session = self.current_session()
+        if not session:
+            self.json_out(HTTPStatus.UNAUTHORIZED, {"error":"Debes iniciar sesión."})
+            return False
+        if session["usuario"].get("rol") != "medico":
+            self.json_out(HTTPStatus.FORBIDDEN, {"error":"Solo los médicos tienen permiso para administrar el stock."})
+            return False
+        return True
     def do_GET(self):
         path=urlsplit(self.path).path
         if path=="/api/sesion":
@@ -242,7 +251,7 @@ class Handler(BaseHTTPRequestHandler):
             with LOCK: SESSIONS[token]={"expiry":time.time()+SESSION_AGE,"usuario":account}
             return self.json_out(200,{"ok":True,"usuario":account},self.new_cookie(token,SESSION_AGE))
         if path=="/api/medicamentos":
-            if not self.auth(): return
+            if not self.auth_medico(): return
             try: data=validate_med(self.read_data())
             except ValueError as e: return self.json_out(400,{"error":str(e)})
             with connect() as c:
@@ -254,7 +263,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_origin(): return self.json_out(403,{"error":"Origen no autorizado."})
         m=MED_PATH.fullmatch(urlsplit(self.path).path)
         if not m: return self.json_out(404,{"error":"Ruta no encontrada."})
-        if not self.auth(): return
+        if not self.auth_medico(): return
         try: data=validate_med(self.read_data())
         except ValueError as e: return self.json_out(400,{"error":str(e)})
         with connect() as c:
@@ -266,7 +275,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_origin(): return self.json_out(403,{"error":"Origen no autorizado."})
         m=MED_PATH.fullmatch(urlsplit(self.path).path)
         if not m: return self.json_out(404,{"error":"Ruta no encontrada."})
-        if not self.auth(): return
+        if not self.auth_medico(): return
         with connect() as c: cur=c.execute("DELETE FROM medicamentos WHERE codigo=?",(int(m.group(1)),))
         if not cur.rowcount: return self.json_out(404,{"error":"Medicamento no encontrado."})
         return self.json_out(200,{"ok":True,"mensaje":"Medicamento eliminado."})
