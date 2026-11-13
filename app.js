@@ -77,6 +77,13 @@
     $('#perfil-apellidos').textContent = usuario?.apellidos || '-';
     $('#perfil-dni').textContent = usuario?.dni || '-';
     $('#perfil-correo').textContent = usuario?.correo || '-';
+    const nombresRoles = { paciente:'Paciente', cuidador:'Cuidador', medico:'Médico' };
+    $('#perfil-rol').textContent = nombresRoles[usuario?.rol] || '-';
+    $('#perfil-cuidador').hidden = usuario?.rol !== 'cuidador';
+    $('#perfil-medico').hidden = usuario?.rol !== 'medico';
+    $('#perfil-dni-paciente').textContent = usuario?.dni_paciente || '-';
+    $('#perfil-ruc').textContent = usuario?.ruc || '-';
+    $('#perfil-puesto').textContent = usuario?.puesto || '-';
   }
   function alternarAuth(modo) {
     const esLogin = modo === 'login';
@@ -88,6 +95,22 @@
     $('#tab-registro').setAttribute('aria-selected', String(!esLogin));
     (esLogin ? $('#dni-login') : $('#reg-nombres')).focus();
   }
+  function actualizarCamposRol() {
+    const rol = $('#reg-rol').value;
+    const cuidador = rol === 'cuidador';
+    const medico = rol === 'medico';
+    $('#reg-campos-cuidador').hidden = !cuidador;
+    $('#reg-campos-medico').hidden = !medico;
+    ['#reg-dni-paciente'].forEach(id => {
+      $(id).disabled = !cuidador;
+      $(id).required = cuidador;
+    });
+    ['#reg-ruc','#reg-puesto'].forEach(id => {
+      $(id).disabled = !medico;
+      $(id).required = medico;
+    });
+  }
+  $('#reg-rol').addEventListener('change', actualizarCamposRol);
   function mostrarAplicacion() {
     $('#pantalla-login').hidden = true;
     $('#aplicacion').hidden = false;
@@ -98,6 +121,7 @@
     $('#pantalla-login').hidden = false;
     $('#form-login').reset();
     $('#form-registro').reset();
+    actualizarCamposRol();
     $('#error-login').hidden = true;
     $('#error-registro').hidden = true;
     $('#ok-registro').textContent = '';
@@ -140,16 +164,21 @@
       const respuesta = await api('/api/register', {
         method: 'POST',
         body: JSON.stringify({
+          rol: $('#reg-rol').value,
           nombres: $('#reg-nombres').value.trim(),
           apellidos: $('#reg-apellidos').value.trim(),
           dni: $('#reg-dni').value.trim(),
           correo: $('#reg-email').value.trim(),
+          dni_paciente: $('#reg-rol').value === 'cuidador' ? $('#reg-dni-paciente').value.trim() : null,
+          ruc: $('#reg-rol').value === 'medico' ? $('#reg-ruc').value.trim() : null,
+          puesto: $('#reg-rol').value === 'medico' ? $('#reg-puesto').value.trim() : null,
           contrasena: $('#reg-clave').value
         })
       });
       $('#dni-login').value = $('#reg-dni').value.trim();
       $('#contrasena-login').value = '';
       $('#form-registro').reset();
+      actualizarCamposRol();
       alternarAuth('login');
       aviso(respuesta.mensaje || 'Registro completado. Ahora inicia sesión.');
     } catch (err) {
