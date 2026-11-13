@@ -17,8 +17,14 @@
       <div class="login-side-content">
         <span class="eyebrow light">PROYECTO UNIVERSITARIO · GRUPO 1</span>
         <h1>Información más clara.<br />Atención más cercana.</h1>
-        <p>Consulta la disponibilidad demostrativa de medicamentos, conoce los establecimientos y explora herramientas inclusivas de seguimiento.</p>
-        <div class="login-points"><span>✓ Información organizada</span><span>✓ Accesibilidad</span><span>✓ Panel de disponibilidad</span></div>
+        <p>MediCuida reúne herramientas para explorar medicamentos y organizar tratamientos desde una plataforma clara, inclusiva y fácil de usar.</p>
+        <div class="login-services" aria-label="¿Qué puedes hacer en MediCuida?">
+          <div class="login-service"><span class="login-service-icon" aria-hidden="true">⌕</span><div><strong>Consultar medicamentos</strong><span>Busca por nombre, categoría o establecimiento.</span></div></div>
+          <div class="login-service"><span class="login-service-icon" aria-hidden="true">▥</span><div><strong>Revisar disponibilidad</strong><span>Identifica existencias disponibles, críticas y agotadas en el inventario de ejemplo.</span></div></div>
+          <div class="login-service"><span class="login-service-icon" aria-hidden="true">◷</span><div><strong>Organizar tus horarios</strong><span>Registra tratamientos de demostración, confirma tomas y consulta un historial.</span></div></div>
+          <div class="login-service"><span class="login-service-icon" aria-hidden="true">♿</span><div><strong>Accesibilidad y orientación</strong><span>Encuentra ayuda, lectura por voz y opciones de tamaño de texto y contraste.</span></div></div>
+        </div>
+        <p class="login-side-note">Proyecto académico con información ficticia. No representa datos oficiales ni sustituye la orientación de un profesional de salud.</p>
       </div>
       <p class="small light-opacity">Interacción Humano-Computador · UPN · Prototipo</p>
     </div>
@@ -47,6 +53,14 @@
           <h2>Crear usuario</h2>
           <p>Registra una cuenta para ingresar luego con tu DNI.</p>
           <form id="form-registro" autocomplete="off">
+            <label for="reg-rol">Rol de usuario</label>
+            <select id="reg-rol" name="rol" required aria-describedby="reg-rol-ayuda">
+              <option value="" selected disabled>Selecciona tu rol</option>
+              <option value="paciente">Paciente</option>
+              <option value="cuidador">Cuidador</option>
+              <option value="medico">Médico</option>
+            </select>
+            <p id="reg-rol-ayuda" class="role-help">Los campos adicionales aparecerán según el rol que selecciones.</p>
             <label for="reg-nombres">Nombres</label>
             <input id="reg-nombres" name="nombres" type="text" placeholder="Ej.: María Fernanda" required />
             <label for="reg-apellidos">Apellidos</label>
@@ -55,6 +69,20 @@
             <input id="reg-dni" name="dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="8 dígitos" required />
             <label for="reg-email">Correo electrónico</label>
             <input id="reg-email" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="email" required />
+            <div id="reg-campos-cuidador" class="role-extra" hidden>
+              <h3>Datos de supervisión</h3>
+              <label for="reg-dni-paciente">DNI del paciente que cuidarás</label>
+              <input id="reg-dni-paciente" name="dni_paciente" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="DNI del paciente (8 dígitos)" autocomplete="off" disabled />
+              <small class="role-hint">Este campo registra la referencia del paciente; no concede acceso automático a su información.</small>
+            </div>
+            <div id="reg-campos-medico" class="role-extra" hidden>
+              <h3>Información laboral</h3>
+              <label for="reg-ruc">RUC del establecimiento donde trabajas</label>
+              <input id="reg-ruc" name="ruc" type="text" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" placeholder="RUC del hospital, clínica, botica, etc. (11 dígitos)" autocomplete="off" disabled />
+              <label for="reg-puesto">Puesto o cargo que desempeñas</label>
+              <input id="reg-puesto" name="puesto" type="text" maxlength="100" placeholder="Ej.: Médico general, pediatra, médico de turno" autocomplete="organization-title" disabled />
+              <small class="role-hint">El rol y el RUC son datos declarados para esta práctica; no constituyen una verificación profesional.</small>
+            </div>
             <label for="reg-clave">Nueva contraseña</label>
             <div class="password-field"><input id="reg-clave" name="contrasena" type="password" placeholder="Crea tu contraseña" autocomplete="new-password" required /><button id="ver-clave-reg" class="password-toggle" type="button" aria-label="Mostrar contraseña de registro">Ver</button></div>
             <p id="error-registro" class="form-error" role="alert" aria-live="polite" hidden></p>
@@ -63,7 +91,7 @@
           </form>
         </div>
 
-        <p class="security-note">Inicio de sesión validado por un servidor local de demostración. No ingresar información médica real.</p>
+        <p class="security-note">Cuenta de demostración académica. No uses datos personales o médicos reales.</p>
       </div>
     </div>
   </section>
@@ -225,7 +253,7 @@
       <!-- PERFIL Y ACCESIBILIDAD -->
       <section class="view" id="vista-perfil" aria-labelledby="perfil-titulo" hidden>
         <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema y gestiona los datos ficticios almacenados localmente.</p></div>
-        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><div class="notice">Sesión validada en el servidor local con cookie HttpOnly. Tus medicamentos del inventario se guardan en SQLite.</div><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los tratamientos y el historial de este navegador.</p><button type="button" id="borrar-datos" class="btn btn-danger">Restablecer datos de prueba</button></article></div></div>
+        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Sesión validada mediante el backend con cookie HttpOnly. Tus medicamentos del inventario se guardan en SQLite.</div><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los tratamientos y el historial de este navegador.</p><button type="button" id="borrar-datos" class="btn btn-danger">Restablecer datos de prueba</button></article></div></div>
       </section>
     </main>
     <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>HTML5, CSS3, JavaScript y Python<br />Datos simulados · Prototipo no oficial</p></div></footer>
