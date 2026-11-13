@@ -1,0 +1,17 @@
+name: Verificar MediCuida
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Revisar sintaxis de backend
+        run: python -m py_compile backend/server.py backend/seguimiento.py
+      - name: Probar roles y registros compartidos
+        run: python -m unittest discover -s tests -v
