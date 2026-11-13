@@ -11,18 +11,18 @@
   const puedeAbrirVista = nombre => VISTAS.includes(nombre) && (rolActual === 'medico' || VISTAS_NO_MEDICO.includes(nombre));
   function actualizarNavegacionPorRol() {
     const medico = rolActual === 'medico';
-    $('[data-medico-only]').forEach(control => {
+    $$('[data-medico-only]').forEach(control => {
       control.hidden = !medico;
       control.disabled = !medico;
       if (!medico) control.setAttribute('aria-hidden', 'true');
       else control.removeAttribute('aria-hidden');
     });
-    $('[data-paciente-cuidador]').forEach(control => {
+    $$('[data-paciente-cuidador]').forEach(control => {
       control.hidden = medico;
       control.disabled = medico;
     });
     if (!$('#aplicacion').hidden) {
-      const visible = $('.view').find(view => !view.hidden);
+      const visible = $$('.view').find(view => !view.hidden);
       const nombre = visible?.id.replace('vista-', '');
       if (nombre && !puedeAbrirVista(nombre)) mostrarVista('inicio');
     }
