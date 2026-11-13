@@ -200,11 +200,11 @@
                 <p id="med-feedback" class="form-feedback" role="status" aria-live="polite"></p>
               </form>
             </article>
-            <aside class="content-card tips-card"><span class="eyebrow">ALMACENAMIENTO REAL DE PRUEBA</span><h2>Los datos sí se guardan</h2><ol class="steps"><li>Agrega un registro con nombre, categoría, establecimiento y stock.</li><li>Comprueba que aparezca en la tabla y en «Disponibilidad».</li><li>Edita o elimina el registro y revisa los cambios en el dashboard.</li></ol><div class="notice">Los datos son ficticios. El archivo <strong>backend/datos/medicuida.sqlite3</strong> se crea automáticamente al iniciar el servidor y conserva los cambios.</div></aside>
+            <aside class="content-card tips-card"><span class="eyebrow">ALMACENAMIENTO REAL DE PRUEBA</span><h2>Los datos sí se guardan</h2><ol class="steps"><li>Agrega un registro con nombre, categoría, establecimiento y stock.</li><li>Comprueba que aparezca en la tabla y en «Disponibilidad».</li><li>Edita o elimina el registro y revisa los cambios en el dashboard.</li></ol><div class="notice">Los datos son ficticios. El archivo SQLite se crea al iniciar el servidor. En Render gratuito los cambios pueden perderse cuando el servicio se reinicia.</div></aside>
           </div>
           <div class="result-heading"><div><h2>Listado de inventario</h2><p id="inventario-total" aria-live="polite">Cargando registros…</p></div><button id="actualizar-inventario" class="btn btn-soft btn-sm" type="button">Actualizar listado</button></div>
           <div class="table-scroll"><table class="data-table"><thead><tr><th>Código</th><th>Medicamento</th><th>Categoría</th><th>Establecimiento</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-inventario"></tbody></table></div>
-          <p class="subtle-note">Eliminar borra el registro del inventario. Esta administración no modifica los tratamientos personales de ejemplo del navegador.</p>
+          <p class="subtle-note">Eliminar borra el registro del inventario. Esta administración no modifica los tratamientos personales registrados en el módulo «Mis medicamentos».</p>
         </div>
       </section>
 
@@ -301,7 +301,7 @@
 
       <!-- PERFIL Y ACCESIBILIDAD -->
       <section class="view" id="vista-perfil" aria-labelledby="perfil-titulo" hidden>
-        <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema y gestiona los datos ficticios almacenados localmente.</p></div>
+        <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema, revisa tu perfil y gestiona tus roles de demostración.</p></div>
         <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Los roles se validan en el servidor. En esta práctica, Médico incluye también las funciones de Paciente y Cuidador, sin verificación profesional real.</div>
           <div class="separator"></div>
           <form id="form-cambiar-rol" class="vertical-form">
