@@ -255,6 +255,23 @@
         </div>
       </section>
 
+          <dialog id="dialog-edicion-trat" class="edit-dialog" aria-labelledby="editar-trat-titulo">
+            <form id="form-editar-trat" class="vertical-form">
+              <h2 id="editar-trat-titulo">Modificar medicamento registrado</h2>
+              <p>Solo el Médico puede modificar registros; el motivo del cambio se notificará al paciente.</p>
+              <input id="edit-trat-id" type="hidden" />
+              <div class="field"><label for="edit-trat-nombre">Nombre</label><input id="edit-trat-nombre" required maxlength="90" /></div>
+              <div class="form-row"><div class="field"><label for="edit-trat-forma">Forma</label><select id="edit-trat-forma"><option>Tableta</option><option>Cápsula</option><option>Jarabe</option><option>Gotas</option><option>Otro</option></select></div><div class="field"><label for="edit-trat-dosis">Dosis de ejemplo</label><input id="edit-trat-dosis" maxlength="120" required /></div></div>
+              <div class="form-row"><div class="field"><label for="edit-trat-inicio">Inicio</label><input id="edit-trat-inicio" type="date" required /></div><div class="field"><label for="edit-trat-fin">Fin</label><input id="edit-trat-fin" type="date" required /></div></div>
+              <div class="form-row"><div class="field"><label for="edit-trat-frecuencia">Tomas diarias</label><select id="edit-trat-frecuencia"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div><div class="field"><label for="edit-trat-hora">Hora inicial</label><input id="edit-trat-hora" type="time" required /></div></div>
+              <div class="field"><label for="edit-trat-medico">Nombre del médico a cargo</label><input id="edit-trat-medico" required maxlength="120" /></div>
+              <div class="field"><label for="edit-trat-motivo">Motivo del registro</label><textarea id="edit-trat-motivo" required maxlength="400" rows="2"></textarea></div>
+              <div class="field"><label for="edit-trat-indicaciones">Forma de administración</label><textarea id="edit-trat-indicaciones" required maxlength="400" rows="2"></textarea></div>
+              <div class="field"><label for="edit-trat-razon"><strong>Motivo de esta modificación *</strong></label><textarea id="edit-trat-razon" required minlength="6" maxlength="500" rows="3" placeholder="Explica claramente el cambio para el paciente"></textarea></div>
+              <p id="edit-trat-feedback" class="form-feedback" role="alert"></p>
+              <div class="row-buttons"><button type="button" id="cancelar-edicion-trat" class="btn btn-outline">Cancelar</button><button type="submit" class="btn btn-primary">Guardar y notificar</button></div>
+            </form>
+          </dialog>
       <!-- HISTORIAL -->
       <section class="view" id="vista-historial" aria-labelledby="historial-titulo" hidden>
         <div class="page-top container"><span class="eyebrow">REGISTROS DE LA DEMOSTRACIÓN</span><h1 id="historial-titulo">Historial de tomas</h1><p>Consulta tu historial o el de un paciente autorizado por DNI de demostración.</p></div>
@@ -275,8 +292,8 @@
             <details><summary>¿La disponibilidad mostrada es real y actualizada?</summary><p>No. Los registros son ficticios y se incluyen únicamente para la práctica académica. Consulta directamente con el establecimiento para conocer disponibilidad real.</p></details>
             <details><summary>¿Es una página oficial del MINSA?</summary><p>No. Es un prototipo universitario elaborado para demostrar conocimientos de desarrollo web e Interacción Humano-Computador.</p></details>
             <details><summary>¿Para qué sirven los filtros del dashboard?</summary><p>Permiten explorar los indicadores y gráficos de una categoría o establecimiento específico, tomando como base los datos ficticios incluidos en el proyecto.</p></details>
-            <details><summary>¿Dónde se guardan los medicamentos del inventario?</summary><p>En una base de datos SQLite del servidor local, dentro de backend/datos/medicuida.sqlite3. Los cambios sobreviven al cierre del navegador y al reinicio del servidor. Los tratamientos personales de ejemplo siguen guardándose en el navegador.</p></details>
-            <details><summary>¿Dónde se guardan mis tratamientos de prueba?</summary><p>En localStorage de este navegador y dispositivo. No se envían a un servidor ni se sincronizan. Puedes borrar todos los datos de prueba desde Accesibilidad.</p></details>
+            <details><summary>¿Dónde se guardan los registros?</summary><p>El inventario y los tratamientos ficticios se guardan en SQLite del servidor. En el plan gratuito de Render pueden perderse después de un reinicio o despliegue.</p></details>
+            <details><summary>¿Cómo funciona la consulta de un paciente?</summary><p>En esta demostración un Cuidador puede consultar el DNI vinculado a su cuenta y un Médico puede consultar el DNI que indique. El uso real requeriría consentimiento y verificación profesional.</p></details>
             <details><summary>¿Puedo utilizar esta aplicación para un tratamiento verdadero?</summary><p>No. No es una historia clínica, no valida dosis y no ofrece información de stock verificable. Sigue siempre las indicaciones de un profesional sanitario.</p></details>
           </div>
         </div>
@@ -285,7 +302,20 @@
       <!-- PERFIL Y ACCESIBILIDAD -->
       <section class="view" id="vista-perfil" aria-labelledby="perfil-titulo" hidden>
         <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema y gestiona los datos ficticios almacenados localmente.</p></div>
-        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Sesión validada mediante el backend con cookie HttpOnly. Tus medicamentos del inventario se guardan en SQLite.</div><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los tratamientos y el historial de este navegador.</p><button type="button" id="borrar-datos" class="btn btn-danger">Restablecer datos de prueba</button></article></div></div>
+        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Refuerza textos, botones y contornos.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Usa síntesis de voz si el navegador la admite.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar lectura</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Los roles se validan en el servidor. En esta práctica, Médico incluye también las funciones de Paciente y Cuidador, sin verificación profesional real.</div>
+          <div class="separator"></div>
+          <form id="form-cambiar-rol" class="vertical-form">
+            <h3>Modificar mis roles</h3>
+            <label for="perfil-cambiar-rol">Selecciona tu rol</label>
+            <select id="perfil-cambiar-rol">
+              <option value="paciente">Paciente</option><option value="cuidador">Cuidador</option>
+              <option value="ambos">Paciente y Cuidador</option><option value="medico">Médico</option>
+            </select>
+            <div id="perfil-vinculo-box" hidden><label for="perfil-vinculo-dni">DNI del paciente vinculado (opcional)</label><input id="perfil-vinculo-dni" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" placeholder="DNI ficticio de 8 dígitos" /><p class="field-help">El vínculo de prueba se declara en el perfil; no equivale a una autorización real del paciente.</p></div>
+            <div id="perfil-rol-clave-box" hidden><label for="perfil-rol-clave">Contraseña para dejar el rol Médico</label><input id="perfil-rol-clave" type="password" autocomplete="current-password" placeholder="Tu contraseña actual" /><p class="field-help">Si abandonas el rol Médico, perderás sus permisos y no podrás recuperarlos desde este formulario.</p></div>
+            <button type="submit" class="btn btn-primary">Guardar cambio de rol</button>
+            <p id="perfil-rol-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+          </form><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los registros locales de las versiones anteriores. Los tratamientos nuevos se almacenan en el servidor.</p><button type="button" id="borrar-datos" class="btn btn-danger">Borrar registros locales antiguos</button></article></div></div>
       </section>
     </main>
     <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>Tu bienestar, nuestra prioridad.</p></div></footer>
