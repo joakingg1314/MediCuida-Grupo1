@@ -527,132 +527,328 @@
     finally { boton.disabled = false; }
   });
 
-  // ------------------------ TRATAMIENTOS DE PRUEBA ------------------------
-  function diasDeEjemplo(desde, hasta) {
-    const a = new Date(`${desde}T00:00:00Z`);
-    const b = new Date(`${hasta}T00:00:00Z`);
-    const n = Math.round((b-a)/86400000)+1;
-    return Number.isFinite(n)?n:0;
-  }
-  function generarTomas(inicio, cantidadDias, frecuencia, hora) {
-    const [hh,mm] = hora.split(':').map(Number);
-    const tomas = [];
-    const inicioMs = Date.parse(`${inicio}T00:00:00Z`);
-    for(let dia=0;dia<cantidadDias;dia++) {
-      for(let i=0;i<frecuencia;i++) {
-        const fecha = new Date(inicioMs + dia*86400000 + ((hh*60+mm)+(i*1440/frecuencia))*60000);
-        tomas.push({id:identificador(), fecha:fecha.toISOString(), confirmada:null});
-      }
-    }
-    return tomas;
-  }
-  $('#form-tratamiento').addEventListener('submit',event=>{
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const nombre = String(form.get('nombre')||'').trim();
-    const forma = String(form.get('forma')||'');
-    const dosis = String(form.get('dosis')||'').trim();
-    const inicio = String(form.get('inicio')||'');
-    const fin = String(form.get('fin')||'');
-    const frecuencia = Number(form.get('frecuencia'));
-    const hora = String(form.get('hora')||'');
-    const feedback = $('#trat-feedback');
-    const dias = diasDeEjemplo(inicio,fin);
-    if (!nombre || !forma || !dosis || !inicio || !fin || !hora || ![1,2,3].includes(frecuencia)) {
-      feedback.textContent='Completa todos los campos obligatorios.';return;
-    }
-    if (dias < 1 || dias > 30) {
-      feedback.textContent='La fecha final debe ser igual o posterior a la inicial. Para esta demo usa hasta 30 días.';return;
-    }
-    if (tratamientos.length >= 40) {feedback.textContent='Límite de 40 registros de demostración alcanzado.';return;}
-    const nuevo = {id:identificador(),nombre,forma,dosis,inicio,fin,frecuencia,hora,
-      tomas:generarTomas(inicio,dias,frecuencia,hora)};
-    tratamientos.push(nuevo);
-    if (!storageWrite(TREAT_KEY,tratamientos)) {tratamientos.pop();feedback.textContent='No fue posible guardar este registro.';return;}
-    $('#form-tratamiento').reset();
-    feedback.textContent=`«${nombre}» se guardó con ${nuevo.tomas.length} horarios de demostración.`;
-    mostrarTratamientos();
-    aviso('Tratamiento de ejemplo guardado.');hablar('Tratamiento de ejemplo guardado correctamente.');
-  });
-  function mostrarTratamientos() {
-    const destino = $('#lista-tratamientos');destino.replaceChildren();
-    if(!tratamientos.length){destino.append(create('div','empty-state','No hay tratamientos guardados. Completa el formulario para probar el sistema.'));return;}
-    tratamientos.forEach(trat=>{
-      if (!Array.isArray(trat.tomas)) return;
-      const hechas = trat.tomas.filter(t=>t.confirmada).length;
-      const pendientes = trat.tomas.filter(t=>!t.confirmada).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-      const tarjeta = create('article','treatment-card');
-      const encabezado = create('div','treatment-header');const caja = create('div');
-      caja.append(create('h3','',trat.nombre),create('p','',`${trat.forma} · ${trat.dosis} · ${trat.inicio} a ${trat.fin}`));
-      const eliminar = create('button','btn btn-danger btn-sm','Eliminar');eliminar.type='button';
-      eliminar.addEventListener('click',()=>{
-        if(!window.confirm(`¿Eliminar el tratamiento de prueba «${trat.nombre}» y sus confirmaciones?`))return;
-        tratamientos = tratamientos.filter(t=>t.id!==trat.id);
-        storageWrite(TREAT_KEY,tratamientos);mostrarTratamientos();aviso('Tratamiento de ejemplo eliminado.');
-      });
-      encabezado.append(caja,eliminar); tarjeta.append(encabezado);
-      const chips = create('div','treatment-schedule');
-      pendientes.slice(0,4).forEach(toma=>chips.append(create('span','schedule-chip',fechaLocal(toma.fecha))));
-      if(pendientes.length>4)chips.append(create('span','schedule-chip',`+ ${pendientes.length-4} pendientes`));
-      if(!pendientes.length)chips.append(create('span','status-badge available','Todas las tomas confirmadas'));
-      tarjeta.append(chips);
-      const pie = create('div','treatment-footer');
-      pie.append(create('span','muted',`${hechas} de ${trat.tomas.length} tomas confirmadas`));
-      const confirmar = create('button','btn btn-primary btn-sm','✓ Confirmar siguiente toma');confirmar.type='button';
-      if (!pendientes.length) confirmar.disabled=true;
-      confirmar.addEventListener('click',()=>confirmarSiguiente(trat.id));
-      pie.append(confirmar);tarjeta.append(pie);destino.append(tarjeta);
+  // ------------------------ TRATAMIENTOS COMPARTIDOS POR CUENTAS (DEMO) ------------------------
+  let usuarioActual = null;
+  let servidorTratamientos = [];
+  let historialActual = [];
+  let dniVistaTratamientos = '';
+  let dniVistaHistorial = '';
+  const puedeSupervisar = () => ['cuidador','ambos','medico'].includes(rolActual);
+  const propioDNI = () => usuarioActual?.dni || '';
+  const nombreCompleto = () => usuarioActual ? (usuarioActual.nombres + ' ' + usuarioActual.apellidos).trim() : '';
+  const mensajeError = error => error?.message || 'No se pudo completar la operación.';
+  const tratarValor = id => $(id).value.trim();
+
+  function actualizarFormulariosPorRol() {
+    const rol = rolActual;
+    const supervisor = puedeSupervisar();
+    const medico = rol === 'medico';
+    $('#trat-destino-box').hidden = !supervisor;
+    $('#historial-consulta').hidden = !supervisor;
+    $('#trat-medico-extra').hidden = !medico;
+    ['#trat-medico-nombre','#trat-motivo','#trat-indicaciones'].forEach(id => {
+      $(id).disabled = !medico;
+      $(id).required = medico;
     });
+    if (medico && !$('#trat-medico-nombre').value) $('#trat-medico-nombre').value = nombreCompleto();
+    if (!supervisor) {
+      $('#trat-dni-paciente').value = '';
+      $('#historial-dni').value = '';
+      dniVistaTratamientos = '';
+      dniVistaHistorial = '';
+    }
+    const options = $('#perfil-cambiar-rol');
+    const optMed = options.querySelector('option[value="medico"]');
+    optMed.hidden = !medico;
+    optMed.disabled = !medico;
+    options.value = rol || 'paciente';
+    $('#perfil-vinculo-dni').value = usuarioActual?.dni_paciente || '';
+    actualizarOpcionesRol();
   }
-  function confirmarSiguiente(id) {
-    const tratamiento = tratamientos.find(t=>t.id===id);
-    if(!tratamiento || !Array.isArray(tratamiento.tomas)) return;
-    const tomas = [...tratamiento.tomas].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-    const siguiente = tomas.find(t=>!t.confirmada);
-    if(!siguiente){aviso('Ya se confirmaron las tomas de este tratamiento.');return;}
-    // Protección de demo contra doble pulsación: no registra dos tomas en menos de 120 min.
-    const ultima = tomas.filter(t=>t.confirmada).map(t=>Date.parse(t.confirmada)).sort((a,b)=>b-a)[0];
-    if (ultima && Date.now()-ultima < 120*60000) {
-      aviso('Aviso de seguridad: se bloquea otra confirmación durante 120 minutos en esta demostración.');
+  function actualizarOpcionesRol() {
+    const newRole = $('#perfil-cambiar-rol').value;
+    const wantsCare = newRole === 'cuidador' || newRole === 'ambos';
+    const leavingDoctor = rolActual === 'medico' && newRole !== 'medico';
+    $('#perfil-vinculo-box').hidden = !wantsCare;
+    $('#perfil-rol-clave-box').hidden = !leavingDoctor;
+    $('#perfil-rol-clave').required = leavingDoctor;
+  }
+  $('#perfil-cambiar-rol').addEventListener('change', actualizarOpcionesRol);
+  $('#form-cambiar-rol').addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = $('#perfil-rol-feedback');
+    message.textContent = '';
+    const role = $('#perfil-cambiar-rol').value;
+    if (rolActual === 'medico' && role !== 'medico' &&
+        !window.confirm('Al dejar de ser Médico perderás el acceso al Dashboard y al stock, y no podrás volver a ser Médico desde el perfil. ¿Continuar?')) return;
+    if (role === 'medico' && rolActual === 'medico') {
+      message.textContent = 'Ya tienes el rol Médico, que incluye funciones de Paciente y Cuidador.';
       return;
     }
-    siguiente.confirmada = new Date().toISOString();
-    if (!storageWrite(TREAT_KEY,tratamientos)) {siguiente.confirmada=null;return;}
-    mostrarTratamientos();
-    aviso('✓ Toma de demostración confirmada.');
-    hablar('Dosis de demostración confirmada correctamente.');
+    try {
+      const result = await api('/api/rol', {
+        method:'POST',
+        body:JSON.stringify({
+          rol:role,
+          dni_paciente:['cuidador','ambos'].includes(role) ? tratarValor('#perfil-vinculo-dni') : '',
+          contrasena:$('#perfil-rol-clave').value
+        })
+      });
+      actualizarDatosUsuario(result.usuario);
+      dniVistaTratamientos = '';
+      dniVistaHistorial = '';
+      $('#trat-dni-paciente').value = '';
+      $('#historial-dni').value = '';
+      $('#perfil-rol-clave').value = '';
+      message.textContent = result.mensaje;
+      aviso(result.mensaje);
+    } catch(error) {
+      message.textContent = mensajeError(error);
+    }
+  });
+
+  async function cargarAvisos() {
+    const caja = $('#avisos-tratamientos');
+    const lista = $('#lista-avisos');
+    try {
+      const result = await api('/api/avisos');
+      const avisos = result.avisos || [];
+      caja.hidden = avisos.length === 0;
+      lista.replaceChildren();
+      avisos.forEach(item => {
+        const nota = create('article','medical-notice');
+        nota.append(create('strong','', 'Actualización de ' + item.medico_nombre));
+        nota.append(create('p','',item.detalle));
+        nota.append(create('small','muted','Motivo: '+item.motivo+' · '+item.fecha));
+        if (!item.leido) {
+          const mark = create('button','btn btn-soft btn-sm','Marcar como leído');
+          mark.type='button';
+          mark.addEventListener('click',async()=>{
+            try { await api('/api/avisos/'+item.id+'/leer',{method:'POST'});await cargarAvisos(); }
+            catch(err){ aviso(mensajeError(err)); }
+          });
+          nota.append(mark);
+        } else {
+          nota.append(create('span','status-badge available','Leído'));
+        }
+        lista.append(nota);
+      });
+    } catch {
+      caja.hidden = true;
+    }
   }
-  // ------------------------ HISTORIAL / CSV ------------------------
-  function datosHistorial() {
-    return tratamientos.flatMap(trat => Array.isArray(trat.tomas) ?
-      trat.tomas.filter(t=>t.confirmada).map(t=>({nombre:trat.nombre,programada:t.fecha,confirmada:t.confirmada})) : [])
-      .sort((a,b)=>b.confirmada.localeCompare(a.confirmada));
+
+  function prepararTratamientoDatos(form) {
+    return {
+      nombre:String(form.get('nombre')||'').trim(),
+      forma:String(form.get('forma')||'').trim(),
+      dosis:String(form.get('dosis')||'').trim(),
+      inicio:String(form.get('inicio')||''),
+      fin:String(form.get('fin')||''),
+      frecuencia:Number(form.get('frecuencia')),
+      hora:String(form.get('hora')||''),
+      dni_paciente:puedeSupervisar() ? tratarValor('#trat-dni-paciente') : '',
+      medico_nombre:rolActual === 'medico' ? tratarValor('#trat-medico-nombre') : '',
+      motivo:rolActual === 'medico' ? tratarValor('#trat-motivo') : '',
+      indicaciones:rolActual === 'medico' ? tratarValor('#trat-indicaciones') : ''
+    };
   }
-  function mostrarHistorial() {
-    const registros = datosHistorial();
-    $('#historial-total').textContent=`${registros.length} ${registros.length===1?'registro':'registros'} · solo en este navegador`;
-    $('#historial-vacio').hidden=registros.length>0;
-    $('#exportar-csv').disabled=registros.length===0;
+  $('#form-tratamiento').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const feedback=$('#trat-feedback');
+    const button=event.currentTarget.querySelector('button[type="submit"]');
+    const data=prepararTratamientoDatos(new FormData(event.currentTarget));
+    feedback.textContent='Guardando en el servidor…';
+    button.disabled=true;
+    try{
+      const result=await api('/api/tratamientos',{method:'POST',body:JSON.stringify(data)});
+      dniVistaTratamientos=data.dni_paciente;
+      $('#form-tratamiento').reset();
+      $('#trat-hora').value='08:00';
+      feedback.textContent='«'+data.nombre+'» se guardó para el DNI '+result.tratamiento.titular_dni+'.';
+      await mostrarTratamientos();
+      aviso('Tratamiento de demostración guardado.');
+    }catch(err){feedback.textContent=mensajeError(err);}
+    finally{button.disabled=false;}
+  });
+
+  async function mostrarTratamientos(){
+    const destino=$('#lista-tratamientos');
+    destino.replaceChildren(create('div','empty-state','Cargando tratamientos desde SQLite…'));
+    $('#trat-vista-persona').textContent='Consultando registros…';
+    try{
+      const target=puedeSupervisar() ? dniVistaTratamientos : '';
+      const data=await api('/api/tratamientos?dni='+encodeURIComponent(target));
+      servidorTratamientos=data.tratamientos || [];
+      $('#trat-vista-persona').textContent = data.dni === propioDNI()
+        ? 'Estos son tus propios medicamentos registrados en el servidor.'
+        : 'Registros de demostración del paciente con DNI '+data.dni+'.';
+      $('#trat-volver-mios').hidden = data.dni === propioDNI();
+      destino.replaceChildren();
+      if(!servidorTratamientos.length){
+        destino.append(create('div','empty-state','Este DNI aún no tiene tratamientos guardados.'));
+      }
+      servidorTratamientos.forEach(trat=>{
+        const hechas=trat.tomas.filter(t=>t.confirmada).length;
+        const pendientes=trat.tomas.filter(t=>!t.confirmada);
+        const tarjeta=create('article','treatment-card');
+        const encabezado=create('div','treatment-header');
+        const caja=create('div');
+        caja.append(create('h3','',trat.nombre),
+          create('p','',trat.forma+' · '+trat.dosis+' · '+trat.inicio+' a '+trat.fin));
+        if(trat.medico_nombre)caja.append(create('p','muted','Médico: '+trat.medico_nombre));
+        if(trat.motivo)caja.append(create('p','muted','Motivo: '+trat.motivo));
+        if(trat.indicaciones)caja.append(create('p','muted','Administración: '+trat.indicaciones));
+        encabezado.append(caja);
+        const acciones=create('div','treatment-actions');
+        if (rolActual === 'medico') {
+          const editar=create('button','btn btn-soft btn-sm','Modificar');
+          editar.type='button';
+          editar.addEventListener('click',()=>abrirEditorTratamiento(trat));
+          acciones.append(editar);
+        }
+        if(trat.titular_dni === propioDNI() || trat.autor_dni === propioDNI()){
+          const eliminar=create('button','btn btn-danger btn-sm','Eliminar');
+          eliminar.type='button';
+          eliminar.addEventListener('click',async()=>{
+            if(!window.confirm('¿Eliminar el tratamiento ficticio «'+trat.nombre+'» y sus tomas?'))return;
+            try {
+              await api('/api/tratamientos/'+trat.id,{method:'DELETE'});
+              await mostrarTratamientos();
+              aviso('Tratamiento de ejemplo eliminado.');
+            } catch(err){aviso(mensajeError(err));}
+          });
+          acciones.append(eliminar);
+        }
+        encabezado.append(acciones);tarjeta.append(encabezado);
+        const chips=create('div','treatment-schedule');
+        pendientes.slice(0,4).forEach(t=>chips.append(create('span','schedule-chip',fechaLocal(t.fecha))));
+        if(pendientes.length>4)chips.append(create('span','schedule-chip','+ '+(pendientes.length-4)+' pendientes'));
+        if(!pendientes.length)chips.append(create('span','status-badge available','Todas las tomas confirmadas'));
+        tarjeta.append(chips);
+        const pie=create('div','treatment-footer');
+        pie.append(create('span','muted',hechas+' de '+trat.tomas.length+' tomas confirmadas'));
+        const confirmar=create('button','btn btn-primary btn-sm','✓ Confirmar siguiente toma');
+        confirmar.type='button';
+        if(!pendientes.length)confirmar.disabled=true;
+        confirmar.addEventListener('click',async()=>{
+          confirmar.disabled=true;
+          try{
+            await api('/api/tratamientos/'+trat.id+'/confirmar',{method:'POST'});
+            await mostrarTratamientos();
+            aviso('Toma de demostración confirmada.');
+            hablar('Toma de demostración confirmada correctamente.');
+          }catch(err){aviso(mensajeError(err));confirmar.disabled=false;}
+        });
+        pie.append(confirmar);tarjeta.append(pie);destino.append(tarjeta);
+      });
+      await cargarAvisos();
+    }catch(err){
+      destino.replaceChildren(create('div','empty-state',mensajeError(err)));
+      $('#trat-vista-persona').textContent='No se pudieron cargar los registros.';
+      $('#trat-volver-mios').hidden=false;
+      $('#avisos-tratamientos').hidden=true;
+    }
+  }
+
+  $('#trat-consultar-dni').addEventListener('click',async()=>{
+    dniVistaTratamientos=tratarValor('#trat-dni-paciente');
+    await mostrarTratamientos();
+  });
+  $('#trat-volver-mios').addEventListener('click',async()=>{
+    dniVistaTratamientos='';
+    $('#trat-dni-paciente').value='';
+    await mostrarTratamientos();
+  });
+
+  function abrirEditorTratamiento(trat){
+    if(rolActual!=='medico')return;
+    const values={
+      '#edit-trat-id':trat.id,'#edit-trat-nombre':trat.nombre,
+      '#edit-trat-forma':trat.forma,'#edit-trat-dosis':trat.dosis,
+      '#edit-trat-inicio':trat.inicio,'#edit-trat-fin':trat.fin,
+      '#edit-trat-frecuencia':String(trat.frecuencia),
+      '#edit-trat-hora':trat.hora,'#edit-trat-medico':trat.medico_nombre || nombreCompleto(),
+      '#edit-trat-motivo':trat.motivo || 'Revisión de ejemplo por profesional',
+      '#edit-trat-indicaciones':trat.indicaciones || 'Instrucciones ficticias de ejemplo'
+    };
+    Object.entries(values).forEach(([id,v])=>$(id).value=v);
+    $('#edit-trat-razon').value='';
+    $('#edit-trat-feedback').textContent='';
+    $('#dialog-edicion-trat').showModal();
+  }
+  $('#cancelar-edicion-trat').addEventListener('click',()=>$('#dialog-edicion-trat').close());
+  $('#form-editar-trat').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const feedback=$('#edit-trat-feedback');
+    const btn=event.currentTarget.querySelector('button[type="submit"]');
+    const data={
+      nombre:tratarValor('#edit-trat-nombre'),forma:tratarValor('#edit-trat-forma'),
+      dosis:tratarValor('#edit-trat-dosis'),inicio:$('#edit-trat-inicio').value,
+      fin:$('#edit-trat-fin').value,frecuencia:Number($('#edit-trat-frecuencia').value),
+      hora:$('#edit-trat-hora').value,
+      medico_nombre:tratarValor('#edit-trat-medico'),
+      motivo:tratarValor('#edit-trat-motivo'),
+      indicaciones:tratarValor('#edit-trat-indicaciones'),
+      motivo_modificacion:tratarValor('#edit-trat-razon')
+    };
+    if(!data.motivo_modificacion || data.motivo_modificacion.length<6){
+      feedback.textContent='Describe el motivo del cambio (al menos 6 caracteres).';
+      return;
+    }
+    btn.disabled=true;
+    try{
+      await api('/api/tratamientos/'+$('#edit-trat-id').value,{method:'PUT',body:JSON.stringify(data)});
+      $('#dialog-edicion-trat').close();
+      await mostrarTratamientos();
+      aviso('Cambios guardados. Se notificará al paciente desde su cuenta.');
+    }catch(err){feedback.textContent=mensajeError(err);}
+    finally{btn.disabled=false;}
+  });
+
+  // ------------------------ HISTORIAL POR DNI Y EXPORTACIÓN CSV ------------------------
+  async function mostrarHistorial(){
+    $('#historial-total').textContent='Cargando historial…';
     const tbody=$('#tabla-historial');tbody.replaceChildren();
-    registros.forEach(reg=>{
-      const fila=document.createElement('tr');
-      [reg.nombre,fechaLocal(reg.programada),fechaLocal(reg.confirmada)].forEach(txt=>fila.append(create('td','',txt)));
-      const estado=create('td');estado.append(badgeEstado('disponible'));estado.firstChild.textContent='Confirmada';
-      fila.append(estado);tbody.append(fila);
-    });
+    try {
+      const dni=puedeSupervisar() ? dniVistaHistorial : '';
+      const response=await api('/api/historial?dni='+encodeURIComponent(dni));
+      historialActual=response.historial || [];
+      $('#historial-total').textContent=historialActual.length+' registros · DNI '+response.dni;
+      $('#historial-vacio').hidden=historialActual.length>0;
+      $('#exportar-csv').disabled=historialActual.length===0;
+      $('#historial-mensaje').textContent=response.dni===propioDNI()
+        ? 'Mostrando tu propio historial.'
+        : 'Mostrando historial ficticio del paciente con DNI '+response.dni+'.';
+      historialActual.forEach(reg=>{
+        const fila=create('tr');
+        [reg.nombre,fechaLocal(reg.programada),fechaLocal(reg.confirmada)].forEach(txt=>fila.append(create('td','',txt)));
+        const estado=create('td');estado.append(create('span','status-badge available','Confirmada'));
+        fila.append(estado);tbody.append(fila);
+      });
+    }catch(err){
+      historialActual=[];
+      $('#historial-total').textContent=mensajeError(err);
+      $('#historial-mensaje').textContent=mensajeError(err);
+      $('#historial-vacio').hidden=false;
+      $('#exportar-csv').disabled=true;
+    }
   }
-  function celdaCSV(text) {
+  $('#historial-buscar').addEventListener('click',async()=>{
+    dniVistaHistorial=tratarValor('#historial-dni');
+    await mostrarHistorial();
+  });
+  function celdaCSV(text){
     let valor=String(text??'');
-    // Excel/LibreOffice: evita que el texto proporcionado se interprete como fórmula.
-    if (/^[\s]*[=+\-@]/.test(valor)) valor="'"+valor;
-    return `"${valor.replaceAll('"','""')}"`;
+    if(/^[\s]*[=+\-@]/.test(valor))valor="'"+valor;
+    return '"'+valor.replaceAll('"','""')+'"';
   }
   $('#exportar-csv').addEventListener('click',()=>{
-    const regs=datosHistorial();if(!regs.length)return;
+    if(!historialActual.length)return;
     const filas=[['Medicamento','Horario programado','Confirmación','Estado'],
-      ...regs.map(r=>[r.nombre,fechaLocal(r.programada),fechaLocal(r.confirmada),'Confirmada'])];
+      ...historialActual.map(r=>[r.nombre,fechaLocal(r.programada),fechaLocal(r.confirmada),'Confirmada'])];
     const contenido='\uFEFF'+filas.map(row=>row.map(celdaCSV).join(';')).join('\r\n');
-    const blob=new Blob([contenido],{type:'text/csv;charset=utf-8;'});
+    const blob=new Blob([contenido],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='MediCuida_historial_demo.csv';
     document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
