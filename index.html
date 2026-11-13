@@ -210,7 +210,7 @@
 
       <!-- GESTIÓN PERSONAL: CARACTERÍSTICA ADICIONAL DEL SITIO ANTERIOR -->
       <section class="view" id="vista-tratamientos" aria-labelledby="tratamientos-titulo" hidden>
-        <div class="page-top container"><span class="eyebrow">GESTIÓN PERSONAL · DEMOSTRACIÓN</span><h1 id="tratamientos-titulo">Mis medicamentos</h1><p>Registra un tratamiento ficticio y marca las tomas completadas. Los datos se guardan solo en este navegador.</p></div>
+        <div class="page-top container"><span class="eyebrow">GESTIÓN PERSONAL · DEMOSTRACIÓN</span><h1 id="tratamientos-titulo">Mis medicamentos</h1><p>Registra tratamientos ficticios y confirma tomas. Los registros se guardan en el servidor para poder consultarlos desde distintas cuentas de prueba.</p></div>
         <div class="container page-body">
           <div class="two-column">
             <article class="content-card"><h2>Registrar un medicamento</h2><p>Introduce únicamente información de ejemplo, no tratamientos reales.</p>
@@ -222,17 +222,49 @@
                 <button class="btn btn-primary btn-full" type="submit">Guardar tratamiento de prueba</button><p class="form-feedback" id="trat-feedback" role="status" aria-live="polite"></p>
               </form>
             </article>
-            <aside class="content-card tips-card"><span class="eyebrow">INSTRUCCIONES</span><h2>Un paso a la vez</h2><ol class="steps"><li>Registra el medicamento de demostración.</li><li>Selecciona horarios ilustrativos según un ejemplo dado.</li><li>Confirma tomas y comprueba su registro en Historial.</li></ol><div class="notice">Esta página no prescribe dosis ni determina horarios seguros. Los intervalos son solo para practicar las funciones de la interfaz.</div></aside>
+            <aside class="content-card tips-card">
+              <div id="trat-destino-box" class="role-field-panel" hidden>
+                <span class="eyebrow">REGISTROS POR PERSONA</span>
+                <h2>¿Para quién es el medicamento?</h2>
+                <label for="trat-dni-paciente">DNI del paciente (opcional)</label>
+                <input id="trat-dni-paciente" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" placeholder="Vacío = mis propios medicamentos" autocomplete="off" />
+                <p class="field-help">Si lo dejas vacío, se registra para ti. El cuidador solo podrá consultar el DNI vinculado en su cuenta.</p>
+                <button type="button" id="trat-consultar-dni" class="btn btn-soft btn-sm">Ver medicamentos del DNI</button>
+                <div id="trat-medico-extra" hidden>
+                  <label for="trat-medico-nombre">Nombre y apellido del médico a cargo *</label>
+                  <input id="trat-medico-nombre" maxlength="120" placeholder="Ej.: María López Torres" disabled />
+                  <label for="trat-motivo">Motivo del registro *</label>
+                  <textarea id="trat-motivo" rows="3" maxlength="400" placeholder="Justificación ficticia del registro" disabled></textarea>
+                  <label for="trat-indicaciones">¿Cómo se toma o administra el medicamento? *</label>
+                  <textarea id="trat-indicaciones" rows="3" maxlength="400" placeholder="Forma de administración de ejemplo" disabled></textarea>
+                </div>
+                <p id="trat-consulta-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+                <div class="separator"></div>
+              </div>
+              <span class="eyebrow">INSTRUCCIONES</span><h2>Un paso a la vez</h2><ol class="steps"><li>Registra el medicamento de demostración.</li><li>Selecciona horarios ilustrativos según un ejemplo dado.</li><li>Confirma tomas y comprueba su registro en Historial.</li></ol><div class="notice">Esta página no prescribe dosis ni determina horarios seguros. Los intervalos son solo para practicar las funciones de la interfaz.</div></aside>
           </div>
-          <div class="result-heading"><div><h2>Tratamientos guardados</h2><p>Elige «Confirmar toma» para comprobar la interacción y la persistencia local.</p></div></div>
-          <div id="lista-tratamientos" class="treatments-list" aria-live="polite"></div>
+          <div class="result-heading"><div><h2>Tratamientos guardados</h2><p>Elige «Confirmar toma» para guardar la confirmación en el servidor.</p></div></div>
+          <div id="avisos-tratamientos" class="content-card notices-panel" hidden>
+             <h2>Notificaciones sobre mis medicamentos</h2>
+             <p>Los cambios que realice un médico en tus tratamientos ficticios aparecerán aquí.</p>
+             <div id="lista-avisos" aria-live="polite"></div>
+           </div>
+           <p id="trat-vista-persona" class="field-help">Visualizando mis propios registros.</p>
+           <button type="button" id="trat-volver-mios" class="btn btn-soft btn-sm" hidden>Ver mis medicamentos</button>
+           <div id="lista-tratamientos" class="treatments-list" aria-live="polite"></div>
         </div>
       </section>
 
       <!-- HISTORIAL -->
       <section class="view" id="vista-historial" aria-labelledby="historial-titulo" hidden>
-        <div class="page-top container"><span class="eyebrow">REGISTROS DE LA DEMOSTRACIÓN</span><h1 id="historial-titulo">Historial de tomas</h1><p>Consulta las tomas que confirmaste en este navegador.</p></div>
-        <div class="container page-body"><div class="result-heading"><div><h2>Tomas confirmadas</h2><p id="historial-total" aria-live="polite">0 registros</p></div><button type="button" id="exportar-csv" class="btn btn-primary">Descargar historial CSV</button></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Medicamento</th><th>Horario programado</th><th>Fecha de confirmación</th><th>Estado</th></tr></thead><tbody id="tabla-historial"></tbody></table></div><p id="historial-vacio" class="empty-state" hidden>No hay tomas confirmadas. Puedes crear un tratamiento de prueba en «Mis medicamentos».</p></div>
+        <div class="page-top container"><span class="eyebrow">REGISTROS DE LA DEMOSTRACIÓN</span><h1 id="historial-titulo">Historial de tomas</h1><p>Consulta tu historial o el de un paciente autorizado por DNI de demostración.</p></div>
+        <div class="container page-body">
+          <div id="historial-consulta" class="content-card linked-history" hidden>
+            <label for="historial-dni">DNI del paciente (opcional)</label>
+            <div class="role-lookup"><input id="historial-dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Vacío = mi historial" /><button type="button" id="historial-buscar" class="btn btn-primary btn-sm">Ver historial</button></div>
+            <p id="historial-mensaje" class="field-help">Introduce un DNI de prueba o deja vacío para consultar tu historial.</p>
+          </div>
+          <div class="result-heading"><div><h2>Tomas confirmadas</h2><p id="historial-total" aria-live="polite">0 registros</p></div><button type="button" id="exportar-csv" class="btn btn-primary">Descargar historial CSV</button></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Medicamento</th><th>Horario programado</th><th>Fecha de confirmación</th><th>Estado</th></tr></thead><tbody id="tabla-historial"></tbody></table></div><p id="historial-vacio" class="empty-state" hidden>No hay tomas confirmadas. Puedes crear un tratamiento de prueba en «Mis medicamentos».</p></div>
       </section>
 
       <!-- ORIENTACIÓN Y FAQ -->
