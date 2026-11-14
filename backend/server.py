@@ -16,6 +16,7 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 import seguimiento
+import persistencia
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(__file__).resolve().parent / "datos"
@@ -34,9 +35,7 @@ DNI = re.compile(r"^[0-9]{8}$")
 EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 def connect():
-    c = sqlite3.connect(DB, timeout=10)
-    c.row_factory = sqlite3.Row
-    return c
+    return persistencia.open_connection(DB)
 
 def init_db():
     with connect() as c:
@@ -67,11 +66,16 @@ def init_db():
         ):
             if name not in existing:
                 c.execute(f"ALTER TABLE usuarios ADD COLUMN {name} {ddl}")
+        # Si la base ya contiene datos, conserva cambios anteriores.
+        # La ampliación a 150 registros se ejecuta una sola vez por base.
+        catalogo = json.loads((ROOT / "backend" / "medicamentos_iniciales.json").read_text(encoding="utf-8"))
         if not c.execute("SELECT 1 FROM configuracion WHERE clave='seeded'").fetchone():
-            path = ROOT / "backend" / "medicamentos_iniciales.json"
-            meds = json.loads(path.read_text(encoding="utf-8"))
-            c.executemany("INSERT INTO medicamentos(codigo,nombre,categoria,establecimiento,stock) VALUES (:codigo,:nombre,:categoria,:establecimiento,:stock)", meds)
+            c.executemany("INSERT INTO medicamentos(codigo,nombre,categoria,establecimiento,stock) VALUES (:codigo,:nombre,:categoria,:establecimiento,:stock)",catalogo)
             c.execute("INSERT INTO configuracion(clave,valor) VALUES('seeded','1')")
+        if not c.execute("SELECT 1 FROM configuracion WHERE clave='catalogo150_v2'").fetchone():
+            c.executemany("INSERT OR IGNORE INTO medicamentos(codigo,nombre,categoria,establecimiento,stock) VALUES (:codigo,:nombre,:categoria,:establecimiento,:stock)",catalogo)
+            c.execute("INSERT INTO configuracion(clave,valor) VALUES('catalogo150_v2','1')")
+
 
 def med(row):
     return {"id": f"MED-{row['codigo']:03d}", "nombre": row["nombre"],
@@ -288,6 +292,9 @@ class Handler(BaseHTTPRequestHandler):
         return self.json_out(200,{"ok":True,"mensaje":"Medicamento eliminado."})
 
 def main():
+    # En Render, restaura primero la última copia desde el Postgres externo.
+    # Si DATABASE_URL está configurada y Postgres falla, NO iniciar con datos vacíos.
+    persistencia.restore_database(DB)
     init_db()
     seguimiento.create_tables(connect)
     server=ThreadingHTTPServer((HOST,PORT),Handler)
