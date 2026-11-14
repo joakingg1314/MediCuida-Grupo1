@@ -133,7 +133,9 @@ class PersistentConnection(sqlite3.Connection):
         schema_changed = self.execute("PRAGMA schema_version").fetchone()[0] != getattr(self, "_start_schema",0)
         result = super().__exit__(exc_type,exc_value,tb)
         if exc_type is None and (changed or schema_changed):
-            save_database(Path(os.environ.get("MEDICUIDA_SQLITE_PATH", __file__)).parent / "medicuida.sqlite3" if os.environ.get("MEDICUIDA_SQLITE_PATH") else _DB_PATH)
+            if _DB_PATH is None:
+                raise RuntimeError("No se configuró la ruta de la base de datos.")
+            save_database(_DB_PATH)
         return result
 
 
