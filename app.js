@@ -1,4 +1,4 @@
-/* MediCuida · Grupo 1 · Frontend conectado a una API local Python/SQLite.
+/* MediCuida · Grupo 1 · Frontend conectado a API Python con SQLite y copia de respaldo en PostgreSQL.
    Inventario FICTICIO. NO es un sistema clínico ni oficial del MINSA. */
 'use strict';
 
@@ -170,7 +170,7 @@
       await cargarInventario();
       $('#contrasena-login').value = '';
       mostrarAplicacion();
-      aviso('Bienvenido a MediCuida. Inventario cargado desde SQLite.');
+      aviso('Bienvenido a MediCuida. Inventario cargado correctamente.');
     } catch (err) {
       error.textContent = err.message;
       error.hidden = false;
@@ -437,7 +437,7 @@
     $('#categoria-dashboard').value='';$('#establecimiento-dashboard').value='';mostrarDashboard();
   });
 
-  // ------------------------ CRUD DE INVENTARIO · API / SQLite ------------------------
+  // ------------------------ CRUD DE INVENTARIO · API con respaldo PostgreSQL ------------------------
   function resetFormularioInventario() {
     $('#form-inventario').reset();
     $('#med-id').value = '';
@@ -449,7 +449,7 @@
   function mostrarInventario() {
     const tbody = $('#tabla-inventario');
     tbody.replaceChildren();
-    $('#inventario-total').textContent = `${inventario.length} ${inventario.length === 1 ? 'medicamento' : 'medicamentos'} almacenados en SQLite`;
+    $('#inventario-total').textContent = `${inventario.length} ${inventario.length === 1 ? 'medicamento registrado' : 'medicamentos registrados'} (con respaldo en PostgreSQL)`;
     if (!inventario.length) {
       const fila = document.createElement('tr');
       const celda = create('td', '', 'No hay medicamentos. Agrega uno con el formulario.');
@@ -490,7 +490,7 @@
           await api(`/api/medicamentos/${encodeURIComponent(med.id)}`, {method:'DELETE'});
           if ($('#med-id').value === med.id) resetFormularioInventario();
           await cargarInventario();
-          aviso(`Medicamento ${med.id} eliminado de SQLite.`);
+          aviso(`Medicamento ${med.id} eliminado del inventario.`);
         } catch(err) {
           aviso(`No se pudo eliminar: ${err.message}`);
           eliminar.disabled = false;
@@ -502,7 +502,7 @@
   }
   $('#med-cancelar').addEventListener('click',resetFormularioInventario);
   $('#actualizar-inventario').addEventListener('click',async () => {
-    try { await cargarInventario(); aviso('Datos actualizados desde SQLite.'); }
+    try { await cargarInventario(); aviso('Inventario actualizado desde el servidor.'); }
     catch(err) { aviso(err.message); }
   });
   $('#form-inventario').addEventListener('submit',async event => {
@@ -525,7 +525,7 @@
       });
       await cargarInventario();
       resetFormularioInventario();
-      aviso(id ? 'Medicamento actualizado en SQLite.' : 'Medicamento agregado a SQLite.');
+      aviso(id ? 'Medicamento actualizado correctamente.' : 'Medicamento agregado correctamente.');
     } catch(err) { feedback.textContent = err.message; }
     finally { boton.disabled = false; }
   });
@@ -677,7 +677,7 @@
 
   async function mostrarTratamientos(){
     const destino=$('#lista-tratamientos');
-    destino.replaceChildren(create('div','empty-state','Cargando tratamientos desde SQLite…'));
+    destino.replaceChildren(create('div','empty-state','Cargando tratamientos desde el servidor…'));
     $('#trat-vista-persona').textContent='Consultando registros…';
     try{
       const target=puedeSupervisar() ? dniVistaTratamientos : '';
