@@ -112,8 +112,13 @@ def validated_treatment(data, role):
     if type(freq) is not int or freq not in (1,2,3):
         raise ValueError("Escoge 1, 2 o 3 tomas diarias de demostración.")
     hour = data.get("hora")
-    if not isinstance(hour,str) or not re.fullmatch(r"(?:[01][0-9]|2[0-3]):[0-5][0-9]",hour):
+    # Algunos navegadores envían input type=time como HH:MM:SS.
+    # Aceptar horas con o sin segundos y guardar con precisión de minuto.
+    if not isinstance(hour, str) or not re.fullmatch(
+        r"(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\.[0-9]{1,3})?)?", hour
+    ):
         raise ValueError("La hora inicial no es válida.")
+    hour = hour[:5]
     info.update(inicio=start,fin=end,frecuencia=freq,hora=hour)
     if role == "medico":
         info["medico_nombre"] = string(data.get("medico_nombre"),"Nombre del médico",4,120)
