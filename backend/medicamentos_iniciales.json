@@ -166,5 +166,887 @@
     "categoria": "Insumos",
     "establecimiento": "Hospital Académico Ficticio",
     "stock": 60
+  },
+  {
+    "codigo": 25,
+    "nombre": "Simeticona 80 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 6
+  },
+  {
+    "codigo": 26,
+    "nombre": "Ambroxol jarabe 15 mg/5 mL",
+    "categoria": "Respiratorios",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 10
+  },
+  {
+    "codigo": 27,
+    "nombre": "Levofloxacino 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 64
+  },
+  {
+    "codigo": 28,
+    "nombre": "Cianocobalamina 1 mg inyectable",
+    "categoria": "Suplementos",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 144
+  },
+  {
+    "codigo": 29,
+    "nombre": "Nitrofurantoína 100 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 124
+  },
+  {
+    "codigo": 30,
+    "nombre": "Glibenclamida 5 mg",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 135
+  },
+  {
+    "codigo": 31,
+    "nombre": "Cetirizina solución 1 mg/mL",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 114
+  },
+  {
+    "codigo": 32,
+    "nombre": "Hidrocortisona 100 mg inyectable",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 0
+  },
+  {
+    "codigo": 33,
+    "nombre": "Clindamicina 300 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 53
+  },
+  {
+    "codigo": 34,
+    "nombre": "Ácido valproico 500 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 172
+  },
+  {
+    "codigo": 35,
+    "nombre": "Budesonida nebulización 0.5 mg/2 mL",
+    "categoria": "Respiratorios",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 173
+  },
+  {
+    "codigo": 36,
+    "nombre": "Peróxido de hidrógeno 3%",
+    "categoria": "Antisépticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 39
+  },
+  {
+    "codigo": 37,
+    "nombre": "Fluconazol 200 mg",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 8
+  },
+  {
+    "codigo": 38,
+    "nombre": "Espironolactona 25 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 6
+  },
+  {
+    "codigo": 39,
+    "nombre": "Insulina NPH 100 UI/mL",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 0
+  },
+  {
+    "codigo": 40,
+    "nombre": "Metronidazol 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 7
+  },
+  {
+    "codigo": 41,
+    "nombre": "Povidona yodada solución 10%",
+    "categoria": "Antisépticos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 5
+  },
+  {
+    "codigo": 42,
+    "nombre": "Ácido acetilsalicílico 100 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 86
+  },
+  {
+    "codigo": 43,
+    "nombre": "Naproxeno 500 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 187
+  },
+  {
+    "codigo": 44,
+    "nombre": "Permetrina crema 5%",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 69
+  },
+  {
+    "codigo": 45,
+    "nombre": "Lansoprazol 30 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 34
+  },
+  {
+    "codigo": 46,
+    "nombre": "Diclofenaco 50 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 0
+  },
+  {
+    "codigo": 47,
+    "nombre": "Montelukast 10 mg",
+    "categoria": "Respiratorios",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 10
+  },
+  {
+    "codigo": 48,
+    "nombre": "Furosemida 40 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 81
+  },
+  {
+    "codigo": 49,
+    "nombre": "Beclometasona inhalador 250 mcg",
+    "categoria": "Respiratorios",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 3
+  },
+  {
+    "codigo": 50,
+    "nombre": "Doxiciclina 100 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 94
+  },
+  {
+    "codigo": 51,
+    "nombre": "Ipratropio bromuro inhalador",
+    "categoria": "Respiratorios",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 78
+  },
+  {
+    "codigo": 52,
+    "nombre": "Miconazol crema 2%",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 62
+  },
+  {
+    "codigo": 53,
+    "nombre": "Cefuroxima 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 121
+  },
+  {
+    "codigo": 54,
+    "nombre": "Cefadroxilo 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Comas",
+    "stock": 159
+  },
+  {
+    "codigo": 55,
+    "nombre": "Amoxicilina + ácido clavulánico 875/125 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 45
+  },
+  {
+    "codigo": 56,
+    "nombre": "Meloxicam 7.5 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 99
+  },
+  {
+    "codigo": 57,
+    "nombre": "Esomeprazol 20 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 17
+  },
+  {
+    "codigo": 58,
+    "nombre": "Ondansetrón 8 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 129
+  },
+  {
+    "codigo": 59,
+    "nombre": "Ácido fólico 1 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 5
+  },
+  {
+    "codigo": 60,
+    "nombre": "Glimepirida 2 mg",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 0
+  },
+  {
+    "codigo": 61,
+    "nombre": "Paracetamol 650 mg",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Comas",
+    "stock": 3
+  },
+  {
+    "codigo": 62,
+    "nombre": "Dexametasona 4 mg",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Centro de Salud Demo Comas",
+    "stock": 0
+  },
+  {
+    "codigo": 63,
+    "nombre": "Atorvastatina 20 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 119
+  },
+  {
+    "codigo": 64,
+    "nombre": "Urea crema 10%",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 82
+  },
+  {
+    "codigo": 65,
+    "nombre": "Simvastatina 20 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 190
+  },
+  {
+    "codigo": 66,
+    "nombre": "Itraconazol 100 mg",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 10
+  },
+  {
+    "codigo": 67,
+    "nombre": "Levetiracetam 500 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 140
+  },
+  {
+    "codigo": 68,
+    "nombre": "Ácido salicílico gel 2%",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 141
+  },
+  {
+    "codigo": 69,
+    "nombre": "Lágrimas artificiales gotas",
+    "categoria": "Oftálmicos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 134
+  },
+  {
+    "codigo": 70,
+    "nombre": "Prednisona 20 mg",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 3
+  },
+  {
+    "codigo": 71,
+    "nombre": "Bisacodilo 5 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 2
+  },
+  {
+    "codigo": 72,
+    "nombre": "Budesonida inhalador 200 mcg",
+    "categoria": "Respiratorios",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 3
+  },
+  {
+    "codigo": 73,
+    "nombre": "Prednisona 5 mg",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 173
+  },
+  {
+    "codigo": 74,
+    "nombre": "Famotidina 20 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 1
+  },
+  {
+    "codigo": 75,
+    "nombre": "Meloxicam 15 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 0
+  },
+  {
+    "codigo": 76,
+    "nombre": "Óxido de zinc pomada",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 4
+  },
+  {
+    "codigo": 77,
+    "nombre": "Atenolol 50 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 3
+  },
+  {
+    "codigo": 78,
+    "nombre": "Ketoprofeno 100 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 3
+  },
+  {
+    "codigo": 79,
+    "nombre": "Ceftriaxona 1 g inyectable",
+    "categoria": "Antibióticos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 5
+  },
+  {
+    "codigo": 80,
+    "nombre": "Fenitoína 100 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 19
+  },
+  {
+    "codigo": 81,
+    "nombre": "Solución de rehidratación oral 500 mL",
+    "categoria": "Hidratación",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 35
+  },
+  {
+    "codigo": 82,
+    "nombre": "Valsartán 80 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 98
+  },
+  {
+    "codigo": 83,
+    "nombre": "Domperidona 10 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 100
+  },
+  {
+    "codigo": 84,
+    "nombre": "Ibuprofeno 200 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 56
+  },
+  {
+    "codigo": 85,
+    "nombre": "Amitriptilina 25 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 7
+  },
+  {
+    "codigo": 86,
+    "nombre": "Loperamida 2 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 2
+  },
+  {
+    "codigo": 87,
+    "nombre": "Timolol gotas 0.5%",
+    "categoria": "Oftálmicos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 125
+  },
+  {
+    "codigo": 88,
+    "nombre": "Sulfato ferroso 300 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 3
+  },
+  {
+    "codigo": 89,
+    "nombre": "Rosuvastatina 10 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Centro de Salud Demo Comas",
+    "stock": 9
+  },
+  {
+    "codigo": 90,
+    "nombre": "Metformina 1000 mg",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 2
+  },
+  {
+    "codigo": 91,
+    "nombre": "Sertralina 50 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 6
+  },
+  {
+    "codigo": 92,
+    "nombre": "Tramadol 50 mg",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 135
+  },
+  {
+    "codigo": 93,
+    "nombre": "Calcio + vitamina D tabletas",
+    "categoria": "Suplementos",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 99
+  },
+  {
+    "codigo": 94,
+    "nombre": "Clorfenamina 4 mg",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 7
+  },
+  {
+    "codigo": 95,
+    "nombre": "Cloranfenicol gotas oftálmicas",
+    "categoria": "Oftálmicos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 150
+  },
+  {
+    "codigo": 96,
+    "nombre": "Nistatina crema 100000 UI/g",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 33
+  },
+  {
+    "codigo": 97,
+    "nombre": "Losartán 100 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 3
+  },
+  {
+    "codigo": 98,
+    "nombre": "Nifedipino 30 mg LP",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 9
+  },
+  {
+    "codigo": 99,
+    "nombre": "Diclofenaco 75 mg/3 mL",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Comas",
+    "stock": 8
+  },
+  {
+    "codigo": 100,
+    "nombre": "Vitamina D3 1000 UI",
+    "categoria": "Suplementos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 30
+  },
+  {
+    "codigo": 101,
+    "nombre": "Piroxicam 20 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 153
+  },
+  {
+    "codigo": 102,
+    "nombre": "Trimetoprima + sulfametoxazol 160/800 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 185
+  },
+  {
+    "codigo": 103,
+    "nombre": "Atorvastatina 40 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 169
+  },
+  {
+    "codigo": 104,
+    "nombre": "Celecoxib 200 mg",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 46
+  },
+  {
+    "codigo": 105,
+    "nombre": "Carbamazepina 200 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 7
+  },
+  {
+    "codigo": 106,
+    "nombre": "Ácido acetilsalicílico 500 mg",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 40
+  },
+  {
+    "codigo": 107,
+    "nombre": "Ampicilina 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 81
+  },
+  {
+    "codigo": 108,
+    "nombre": "Hidroclorotiazida 25 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 8
+  },
+  {
+    "codigo": 109,
+    "nombre": "Terbinafina crema 1%",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 110
+  },
+  {
+    "codigo": 110,
+    "nombre": "Dexametasona 4 mg/mL inyectable",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 10
+  },
+  {
+    "codigo": 111,
+    "nombre": "Betametasona crema 0.05%",
+    "categoria": "Corticosteroides",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 159
+  },
+  {
+    "codigo": 112,
+    "nombre": "Ketoconazol crema 2%",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 4
+  },
+  {
+    "codigo": 113,
+    "nombre": "Tramadol gotas 100 mg/mL",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 9
+  },
+  {
+    "codigo": 114,
+    "nombre": "Desloratadina 5 mg",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 64
+  },
+  {
+    "codigo": 115,
+    "nombre": "Empagliflozina 10 mg",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 0
+  },
+  {
+    "codigo": 116,
+    "nombre": "Bismuto subsalicilato suspensión",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 1
+  },
+  {
+    "codigo": 117,
+    "nombre": "Metamizol 1 g/2 mL inyectable",
+    "categoria": "Analgésicos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 2
+  },
+  {
+    "codigo": 118,
+    "nombre": "Complejo B tabletas",
+    "categoria": "Suplementos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 49
+  },
+  {
+    "codigo": 119,
+    "nombre": "Ciprofloxacino 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 62
+  },
+  {
+    "codigo": 120,
+    "nombre": "Dextrosa 5% 500 mL",
+    "categoria": "Soluciones",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 6
+  },
+  {
+    "codigo": 121,
+    "nombre": "Fluoxetina 20 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 77
+  },
+  {
+    "codigo": 122,
+    "nombre": "Clorfenamina jarabe 2 mg/5 mL",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Centro de Salud Demo San Borja",
+    "stock": 138
+  },
+  {
+    "codigo": 123,
+    "nombre": "Salbutamol solución para nebulizar",
+    "categoria": "Respiratorios",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 160
+  },
+  {
+    "codigo": 124,
+    "nombre": "Acetilcisteína 600 mg efervescente",
+    "categoria": "Respiratorios",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 151
+  },
+  {
+    "codigo": 125,
+    "nombre": "Omeprazol 40 mg",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 70
+  },
+  {
+    "codigo": 126,
+    "nombre": "Sulfato ferroso gotas",
+    "categoria": "Suplementos",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 84
+  },
+  {
+    "codigo": 127,
+    "nombre": "Gabapentina 300 mg",
+    "categoria": "Neurológicos",
+    "establecimiento": "Botica Académica Miraflores",
+    "stock": 169
+  },
+  {
+    "codigo": 128,
+    "nombre": "Metamizol 500 mg",
+    "categoria": "Analgésicos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 3
+  },
+  {
+    "codigo": 129,
+    "nombre": "Loratadina jarabe 5 mg/5 mL",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 171
+  },
+  {
+    "codigo": 130,
+    "nombre": "Ibuprofeno suspensión 100 mg/5 mL",
+    "categoria": "Antiinflamatorios",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 147
+  },
+  {
+    "codigo": 131,
+    "nombre": "Clorhexidina solución 2%",
+    "categoria": "Antisépticos",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 28
+  },
+  {
+    "codigo": 132,
+    "nombre": "Amoxicilina 250 mg/5 mL",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 59
+  },
+  {
+    "codigo": 133,
+    "nombre": "Cloruro de sodio 0.9% 500 mL",
+    "categoria": "Soluciones",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 5
+  },
+  {
+    "codigo": 134,
+    "nombre": "Mupirocina ungüento 2%",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 141
+  },
+  {
+    "codigo": 135,
+    "nombre": "Levocetirizina 5 mg",
+    "categoria": "Antialérgicos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 47
+  },
+  {
+    "codigo": 136,
+    "nombre": "Claritromicina 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Establecimiento Demo Callao",
+    "stock": 88
+  },
+  {
+    "codigo": 137,
+    "nombre": "Lactulosa jarabe",
+    "categoria": "Gastrointestinales",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 93
+  },
+  {
+    "codigo": 138,
+    "nombre": "Clopidogrel 75 mg",
+    "categoria": "Cardiovasculares",
+    "establecimiento": "Centro de Salud Demo Norte",
+    "stock": 55
+  },
+  {
+    "codigo": 139,
+    "nombre": "Sales de rehidratación oral sobres 27.9 g",
+    "categoria": "Hidratación",
+    "establecimiento": "Hospital Demo de Lima",
+    "stock": 89
+  },
+  {
+    "codigo": 140,
+    "nombre": "Gliclazida 60 mg LP",
+    "categoria": "Antidiabéticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 178
+  },
+  {
+    "codigo": 141,
+    "nombre": "Carbonato de calcio 500 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 1
+  },
+  {
+    "codigo": 142,
+    "nombre": "Calamina loción",
+    "categoria": "Dermatológicos",
+    "establecimiento": "Botica Ficticia La Victoria",
+    "stock": 33
+  },
+  {
+    "codigo": 143,
+    "nombre": "Azitromicina 200 mg/5 mL",
+    "categoria": "Antibióticos",
+    "establecimiento": "Hospital Académico Ficticio",
+    "stock": 51
+  },
+  {
+    "codigo": 144,
+    "nombre": "Paracetamol 120 mg/5 mL jarabe",
+    "categoria": "Analgésicos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 155
+  },
+  {
+    "codigo": 145,
+    "nombre": "Cefalexina 500 mg",
+    "categoria": "Antibióticos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 39
+  },
+  {
+    "codigo": 146,
+    "nombre": "Zinc 20 mg",
+    "categoria": "Suplementos",
+    "establecimiento": "Farmacia Educativa del Sur",
+    "stock": 0
+  },
+  {
+    "codigo": 147,
+    "nombre": "Captopril 25 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Centro de Salud Demo Breña",
+    "stock": 1
+  },
+  {
+    "codigo": 148,
+    "nombre": "Tobramicina gotas 0.3%",
+    "categoria": "Oftálmicos",
+    "establecimiento": "Centro de Salud Demo Sur",
+    "stock": 80
+  },
+  {
+    "codigo": 149,
+    "nombre": "Enalapril 5 mg",
+    "categoria": "Antihipertensivos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 47
+  },
+  {
+    "codigo": 150,
+    "nombre": "Fluconazol 150 mg",
+    "categoria": "Antimicóticos",
+    "establecimiento": "Posta Médica de Ejemplo",
+    "stock": 8
   }
 ]
