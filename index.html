@@ -131,7 +131,12 @@
               <h2>Consulta en segundos</h2>
               <p>Busca un medicamento y revisa su estado en nuestros registros simulados.</p>
               <div class="mini-search"><span aria-hidden="true">⌕</span><span>¿Qué medicamento buscas?</span></div>
-              <div class="hero-summary"><div><span class="status-mark ok"></span><span>Disponible</span></div><div><span class="status-mark warning"></span><span>Stock crítico</span></div><div><span class="status-mark off"></span><span>Sin stock</span></div></div>
+              <div class="hero-summary" aria-label="Buscar según la disponibilidad">
+                <button type="button" data-stock-quick="con-stock" aria-label="Consultar medicamentos con stock"><span class="status-mark ok"></span><span>Con stock (1 o más)</span><span aria-hidden="true">→</span></button>
+                <button type="button" data-stock-quick="disponible" aria-label="Consultar medicamentos disponibles con más de diez unidades"><span class="status-mark ok"></span><span>Disponible (más de 10)</span><span aria-hidden="true">→</span></button>
+                <button type="button" data-stock-quick="critico" aria-label="Consultar medicamentos con stock crítico"><span class="status-mark warning"></span><span>Stock crítico (1 a 10)</span><span aria-hidden="true">→</span></button>
+                <button type="button" data-stock-quick="agotado" aria-label="Consultar medicamentos sin stock"><span class="status-mark off"></span><span>Sin stock (0)</span><span aria-hidden="true">→</span></button>
+              </div>
               <div class="visual-caption">Información ilustrativa, no stock en tiempo real</div>
             </aside>
           </div>
@@ -154,6 +159,7 @@
             <div class="field grow"><label for="buscar-stock">Nombre o código</label><input id="buscar-stock" type="search" placeholder="Ej.: paracetamol o MED-001" /></div>
             <div class="field"><label for="categoria-consulta">Categoría</label><select id="categoria-consulta"><option value="">Todas las categorías</option></select></div>
             <div class="field"><label for="establecimiento-consulta">Establecimiento</label><select id="establecimiento-consulta"><option value="">Todos los establecimientos</option></select></div>
+            <div class="field"><label for="estado-consulta">Estado del stock</label><select id="estado-consulta"><option value="">Todos los estados</option><option value="con-stock">Con stock (1 o más)</option><option value="disponible">Disponible (más de 10)</option><option value="critico">Stock crítico (1 a 10)</option><option value="agotado">Sin stock (0)</option></select></div>
             <button class="btn btn-primary align-end" type="submit">Buscar</button>
           </form>
           <div class="result-heading"><div><h2>Resultados de la consulta</h2><p id="total-resultados" aria-live="polite">Cargando registros…</p></div><button class="btn btn-soft btn-sm" type="button" id="limpiar-consulta">Limpiar filtros</button></div>
@@ -166,7 +172,8 @@
       <section class="view" id="vista-dashboard" aria-labelledby="dashboard-titulo" hidden>
         <div class="page-top container"><span class="eyebrow">PANEL DE CONTROL</span><h1 id="dashboard-titulo">Dashboard de disponibilidad</h1><p>Explora indicadores y gráficos calculados sobre un inventario académico ficticio.</p></div>
         <div class="container page-body">
-          <div class="filter-panel dashboard-filters"><div class="field"><label for="categoria-dashboard">Filtrar por categoría</label><select id="categoria-dashboard"><option value="">Todas las categorías</option></select></div><div class="field"><label for="establecimiento-dashboard">Filtrar por establecimiento</label><select id="establecimiento-dashboard"><option value="">Todos los establecimientos</option></select></div><button class="btn btn-soft align-end" id="reiniciar-dashboard" type="button">Restablecer filtros</button></div>
+          <div class="filter-panel dashboard-filters"><div class="field"><label for="categoria-dashboard">Filtrar por categoría</label><select id="categoria-dashboard"><option value="">Todas las categorías</option></select></div><div class="field"><label for="establecimiento-dashboard">Filtrar por establecimiento</label><select id="establecimiento-dashboard"><option value="">Todos los establecimientos</option></select></div><div class="field"><label for="estado-dashboard">Filtrar por stock</label><select id="estado-dashboard"><option value="">Todos los estados</option><option value="con-stock">Con stock (1 o más)</option><option value="disponible">Disponible (más de 10)</option><option value="critico">Stock crítico (1 a 10)</option><option value="agotado">Sin stock (0)</option></select></div><button class="btn btn-soft align-end" id="reiniciar-dashboard" type="button">Restablecer filtros</button></div>
+          <p id="total-filtrado-dashboard" class="stock-filter-note" aria-live="polite">Indicadores del inventario completo</p>
           <div class="metric-grid" aria-live="polite">
             <article class="metric-card"><div class="metric-icon ic-blue">▤</div><p>Medicamentos registrados</p><strong id="metric-total">0</strong><small>Registros de la selección</small></article>
             <article class="metric-card"><div class="metric-icon ic-green">✓</div><p>Medicamentos disponibles</p><strong id="metric-disponibles">0</strong><small>Incluye stock crítico (&gt; 0)</small></article>
@@ -203,6 +210,7 @@
             <aside class="content-card tips-card"><span class="eyebrow">ALMACENAMIENTO DE DEMOSTRACIÓN</span><h2>Respaldo en PostgreSQL</h2><ol class="steps"><li>Agrega un registro con nombre, categoría, establecimiento y stock.</li><li>Comprueba que aparezca en la tabla y en «Disponibilidad».</li><li>Edita o elimina el registro y revisa los cambios en el dashboard.</li></ol><div class="notice">Los datos son ficticios. El sistema guarda los cambios y mantiene una copia externa en PostgreSQL, que permite recuperarlos tras reiniciar el servidor. La base gratuita tiene vencimiento y no equivale a un servicio de producción.</div></aside>
           </div>
           <div class="result-heading"><div><h2>Listado de inventario</h2><p id="inventario-total" aria-live="polite">Cargando registros…</p></div><button id="actualizar-inventario" class="btn btn-soft btn-sm" type="button">Actualizar listado</button></div>
+          <div class="filter-panel inventory-filters"><div class="field"><label for="estado-inventario">Mostrar por estado del stock</label><select id="estado-inventario"><option value="">Todos los estados</option><option value="con-stock">Con stock (1 o más)</option><option value="disponible">Disponible (más de 10)</option><option value="critico">Stock crítico (1 a 10)</option><option value="agotado">Sin stock (0)</option></select></div><button id="limpiar-inventario" class="btn btn-soft align-end" type="button">Mostrar todos</button></div>
           <div class="table-scroll"><table class="data-table"><thead><tr><th>Código</th><th>Medicamento</th><th>Categoría</th><th>Establecimiento</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-inventario"></tbody></table></div>
           <p class="subtle-note">Eliminar borra el registro del inventario. Esta administración no modifica los tratamientos personales registrados en el módulo «Mis medicamentos».</p>
         </div>
