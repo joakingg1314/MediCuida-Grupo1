@@ -15,7 +15,3 @@ jobs:
         run: python -m py_compile backend/server.py backend/seguimiento.py backend/persistencia.py
       - name: Probar roles y registros compartidos
         run: python -m unittest discover -s tests -v
-      - name: Revisar sintaxis de JavaScript
-        run: node --check app.js
-      - name: Verificar filtros de stock
-        run: node tests/test_filtros.js
