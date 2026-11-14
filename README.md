@@ -16,7 +16,7 @@
 
 ## Datos y pruebas
 
-El inventario, los usuarios, los tratamientos, las tomas y las notificaciones se guardan en **SQLite** del servidor; ya no exclusivamente en el navegador. Los tratamientos antiguos de localStorage no se importan automáticamente.
+El inventario, los usuarios, los tratamientos, las tomas y las notificaciones se administran en **SQLite** dentro del servidor y se respaldan como una copia completa en **PostgreSQL externo** cuando `DATABASE_URL` está configurada. Al arrancar, MediCuida restaura la última copia. Los tratamientos antiguos de `localStorage` no se importan automáticamente.
 
 Las autorizaciones por DNI y la autodeclaración de Médico son **solo demostrativas**. No usar con nombres, DNI, contactos, diagnósticos ni tratamientos médicos reales. Para un sistema real serían necesarios verificación de profesionales y establecimientos, consentimiento expreso del paciente, auditoría, políticas de acceso y protección de datos.
 
@@ -34,6 +34,8 @@ Luego abre http://127.0.0.1:8765.
 
 El archivo `render.yaml` incluye la configuración necesaria. El servidor usa `PORT`, `MEDICUIDA_HOST=0.0.0.0` y `MEDICUIDA_NO_BROWSER=1`.
 
-**Limitación del plan gratuito de Render:** SQLite usa almacenamiento efímero, por lo que usuarios, tratamientos y stock pueden desaparecer al suspenderse, reiniciarse o volver a desplegarse el servicio. Para una base de datos durable, se requiere alojamiento con almacenamiento persistente o migración a un servicio de base de datos adecuado.
+**Almacenamiento en Render:** el disco del servicio web gratuito es efímero, pero MediCuida guarda una copia transaccional del archivo SQLite en **PostgreSQL externo** después de confirmar escrituras y la restaura al iniciar. Esto permite recuperar la base después de suspensiones y despliegues mientras PostgreSQL esté operativo. No es una migración a PostgreSQL nativo ni una solución de producción para uso simultáneo de múltiples instancias.
+
+**Vencimiento:** la instancia gratuita de PostgreSQL utilizada aquí vence el **14 de diciembre de 2026**. Antes de entonces debe migrarse, renovarse o cambiar de plan para evitar perder los registros. Usar solo datos ficticios.
 
 Los tests automatizados están en `tests/test_seguimiento.py` y su flujo de GitHub Actions en `.github/workflows/verificar.yml`.
