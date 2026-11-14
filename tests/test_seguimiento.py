@@ -90,6 +90,32 @@ class SeguimientoTest(unittest.TestCase):
         self.assertIn("Ajustar información",notices.result["avisos"][0]["detalle"])
         unauthorized=self.call(self.paciente,"PUT",f"/api/tratamientos/{tid}",doctor_updated)
         self.assertEqual(unauthorized.status,403)
+    def test_horas_de_navegador_con_segundos(self):
+        # En algunos navegadores type=time envía HH:MM:SS en vez de HH:MM.
+        for hora in ("12:00", "12:00:00", "12:00:00.000"):
+            datos = self.example()
+            datos["hora"] = hora
+            result = self.call(self.paciente, "POST", "/api/tratamientos", datos)
+            self.assertEqual(result.status, 201, f"No se guardó {hora}: {result.result}")
+            self.assertEqual(result.result["tratamiento"]["hora"], "12:00")
+            self.assertTrue(result.result["tratamiento"]["tomas"])
+        # Cualquier hora realmente inválida sigue rechazándose.
+        datos = self.example()
+        datos["hora"] = "25:80:00"
+        bad = self.call(self.paciente, "POST", "/api/tratamientos", datos)
+        self.assertEqual(bad.status, 400)
+
+    def test_medico_modifica_hora_con_segundos(self):
+        original = self.call(self.medico, "POST", "/api/tratamientos", self.example())
+        self.assertEqual(original.status, 201)
+        tid = original.result["tratamiento"]["id"]
+        datos = self.example()
+        datos["hora"] = "12:00:00"
+        datos["motivo_modificacion"] = "Ajuste ficticio del horario"
+        actualizado = self.call(self.medico, "PUT", f"/api/tratamientos/{tid}", datos)
+        self.assertEqual(actualizado.status, 200, actualizado.result)
+        self.assertEqual(actualizado.result["tratamiento"]["hora"], "12:00")
+
     def test_role_change_limits(self):
         attempt=self.call(self.paciente,"POST","/api/rol",{"rol":"medico","contrasena":"x"})
         self.assertEqual(attempt.status,400)
