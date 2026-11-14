@@ -12,6 +12,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Revisar sintaxis de backend
-        run: python -m py_compile backend/server.py backend/seguimiento.py
+        run: python -m py_compile backend/server.py backend/seguimiento.py backend/persistencia.py
       - name: Probar roles y registros compartidos
         run: python -m unittest discover -s tests -v
