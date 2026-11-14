@@ -1494,3 +1494,53 @@ textarea {
   .row-buttons .btn {flex:1}
   .role-lookup .btn {width:100%}
 }
+
+/* Filtros de disponibilidad: accesibles y adaptables en las pantallas de stock */
+.hero-summary > button {
+  display:flex;
+  width:100%;
+  align-items:center;
+  gap:10px;
+  border:1px solid #e1edf5;
+  background:#f8fbff;
+  padding:12px 13px;
+  border-radius:9px;
+  color:#365168;
+  font:inherit;
+  font-size:.86rem;
+  font-weight:650;
+  text-align:left;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.hero-summary > button > span:last-child {
+  margin-left:auto;
+  color:#1870bc;
+  font-size:1.1rem;
+}
+.hero-summary > button:hover {
+  background:#e9f4ff;
+  border-color:#7cb5e5;
+  transform:translateY(-1px);
+}
+.hero-summary > button:focus-visible {
+  outline:3px solid #1d70cb;
+  outline-offset:3px;
+}
+.stock-filter-note {
+  margin:0 0 15px;
+  color:#546f84;
+  font-size:.88rem;
+}
+.inventory-filters {
+  margin:0 0 18px;
+  box-shadow:none;
+}
+.inventory-filters .field {
+  flex:1 1 260px;
+  max-width:380px;
+}
+@media (max-width:560px) {
+  .inventory-filters .field { max-width:none; }
+  .hero-summary > button { min-height:44px; }
+}
