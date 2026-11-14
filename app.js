@@ -297,19 +297,11 @@
       mostrarInventario();
     }
   }
-  // El mismo criterio se usa en todas las pantallas.
-  // 'Con stock' incluye también stock crítico; 'Disponible' significa más de 10.
-  function cumpleFiltroStock(item, estado = '') {
-    if (!estado) return true;
-    if (estado === 'con-stock') return item.stock > 0;
-    return determinarEstado(item.stock) === estado;
-  }
-  function registrosFiltrados(categoria, establecimiento, busqueda = '', estado = '') {
+  function registrosFiltrados(categoria, establecimiento, busqueda = '') {
     const term = busqueda.trim().toLocaleLowerCase('es');
     return inventario.filter(item =>
       (!categoria || item.categoria === categoria) &&
       (!establecimiento || item.establecimiento === establecimiento) &&
-      cumpleFiltroStock(item, estado) &&
       (!term || `${item.id} ${item.nombre} ${item.categoria} ${item.establecimiento}`.toLocaleLowerCase('es').includes(term))
     );
   }
@@ -317,7 +309,7 @@
     return create('span', `status-badge ${ESTADOS[estado].clase}`, ESTADOS[estado].texto);
   }
   function mostrarResultados() {
-    const datos = registrosFiltrados($('#categoria-consulta').value,$('#establecimiento-consulta').value,$('#buscar-stock').value,$('#estado-consulta').value);
+    const datos = registrosFiltrados($('#categoria-consulta').value,$('#establecimiento-consulta').value,$('#buscar-stock').value);
     $('#total-resultados').textContent = `${datos.length} ${datos.length === 1 ? 'registro encontrado' : 'registros encontrados'} · datos simulados`;
     const grid = $('#resultados-stock');
     grid.replaceChildren();
@@ -338,31 +330,19 @@
     grid.append(fragmento);
   }
   $('#form-consulta').addEventListener('submit', event => {event.preventDefault();mostrarResultados();});
-  ['#categoria-consulta','#establecimiento-consulta','#estado-consulta'].forEach(id => $(id).addEventListener('change',mostrarResultados));
-  // Accesos rápidos de stock desde la página Inicio.
-  $('[data-stock-quick]').forEach(button => button.addEventListener('click', () => {
-    $('#estado-consulta').value = button.dataset.stockQuick;
-    $('#categoria-consulta').value = '';
-    $('#establecimiento-consulta').value = '';
-    $('#buscar-stock').value = '';
-    mostrarVista('consulta');
-  }));
+  ['#categoria-consulta','#establecimiento-consulta'].forEach(id => $(id).addEventListener('change',mostrarResultados));
   $('#buscar-stock').addEventListener('input', mostrarResultados);
   $('#limpiar-consulta').addEventListener('click', () => {
     $('#buscar-stock').value = '';
     $('#categoria-consulta').value = '';
     $('#establecimiento-consulta').value = '';
-    $('#estado-consulta').value = '';
     mostrarResultados();
   });
 
   // ------------------------ INDICADORES Y GRÁFICOS ------------------------
   function mostrarDashboard() {
-    const registros = registrosFiltrados($('#categoria-dashboard').value,$('#establecimiento-dashboard').value,'',$('#estado-dashboard').value);
+    const registros = registrosFiltrados($('#categoria-dashboard').value,$('#establecimiento-dashboard').value);
     const total = registros.length;
-    $('#total-filtrado-dashboard').textContent = $('#estado-dashboard').value || $('#categoria-dashboard').value || $('#establecimiento-dashboard').value
-      ? `Mostrando ${total} de ${inventario.length} registros del inventario según los filtros seleccionados.`
-      : `Mostrando todo el inventario: ${total} registros de demostración.`;
     const disponibles = registros.filter(item => item.stock > 0).length;
     const criticos = registros.filter(item => determinarEstado(item.stock) === 'critico').length;
     const porcentaje = total ? (disponibles / total * 100).toFixed(1) : '0.0';
@@ -452,9 +432,9 @@
     svg.prepend(titulo);
     $('#resumen-evolucion').textContent = meses.map((m,i)=>`${m}: ${totales[i]}`).join('  ·  ')+' unidades simuladas';
   }
-  ['#categoria-dashboard','#establecimiento-dashboard','#estado-dashboard'].forEach(id => $(id).addEventListener('change',mostrarDashboard));
+  ['#categoria-dashboard','#establecimiento-dashboard'].forEach(id => $(id).addEventListener('change',mostrarDashboard));
   $('#reiniciar-dashboard').addEventListener('click', () => {
-    $('#categoria-dashboard').value='';$('#establecimiento-dashboard').value='';$('#estado-dashboard').value='';mostrarDashboard();
+    $('#categoria-dashboard').value='';$('#establecimiento-dashboard').value='';mostrarDashboard();
   });
 
   // ------------------------ CRUD DE INVENTARIO · API con respaldo PostgreSQL ------------------------
@@ -469,18 +449,15 @@
   function mostrarInventario() {
     const tbody = $('#tabla-inventario');
     tbody.replaceChildren();
-    const filtrados = registrosFiltrados('', '', '', $('#estado-inventario').value);
-    $('#inventario-total').textContent = `Mostrando ${filtrados.length} de ${inventario.length} ${inventario.length === 1 ? 'medicamento registrado' : 'medicamentos registrados'} (con respaldo en PostgreSQL)`;
-    if (!filtrados.length) {
+    $('#inventario-total').textContent = `${inventario.length} ${inventario.length === 1 ? 'medicamento registrado' : 'medicamentos registrados'} (con respaldo en PostgreSQL)`;
+    if (!inventario.length) {
       const fila = document.createElement('tr');
-      const celda = create('td', '', inventario.length
-        ? 'No hay medicamentos con este estado de stock. Prueba con otro filtro.'
-        : 'No hay medicamentos. Agrega uno con el formulario.');
+      const celda = create('td', '', 'No hay medicamentos. Agrega uno con el formulario.');
       celda.colSpan = 7;
       fila.append(celda); tbody.append(fila);
       return;
     }
-    filtrados.forEach(med => {
+    inventario.forEach(med => {
       const fila = document.createElement('tr');
       [med.id, med.nombre, med.categoria, med.establecimiento, String(med.stock)].forEach(value => fila.append(create('td','',value)));
       const estado = create('td');
@@ -524,11 +501,6 @@
     });
   }
   $('#med-cancelar').addEventListener('click',resetFormularioInventario);
-  $('#estado-inventario').addEventListener('change',mostrarInventario);
-  $('#limpiar-inventario').addEventListener('click', () => {
-    $('#estado-inventario').value = '';
-    mostrarInventario();
-  });
   $('#actualizar-inventario').addEventListener('click',async () => {
     try { await cargarInventario(); aviso('Inventario actualizado desde el servidor.'); }
     catch(err) { aviso(err.message); }
