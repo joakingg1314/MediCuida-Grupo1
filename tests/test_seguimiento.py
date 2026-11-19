@@ -59,7 +59,8 @@ class SeguimientoTest(unittest.TestCase):
                 "correo":"fake@example.test","ruc":None,"puesto":None}
     def call(self, user, method, path, data=None):
         handler = FakeHandler(user,path,data)
-        self.assertTrue(seguimiento.dispatch(handler,method,path,self.connect))
+        route = path.split("?", 1)[0]
+        self.assertTrue(seguimiento.dispatch(handler,method,route,self.connect))
         return handler
     def example(self,linked=""):
         return {"nombre":"Medicina Ficticia", "forma":"Tableta", "dosis":"1 unidad de prueba",

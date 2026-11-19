@@ -73,9 +73,11 @@
   if (!preferencias || typeof preferencias !== 'object') preferencias = { texto:false, contraste:false, daltonismo:false, voz:false };
   if (typeof preferencias.daltonismo !== 'boolean') preferencias.daltonismo = false;
   function colorEstado(tipo) {
-    if (preferencias.contraste) return colorEstado(tipo)Contraste;
-    if (preferencias.daltonismo) return colorEstado(tipo)Daltonismo;
-    return colorEstado(tipo);
+    const estado = ESTADOS[tipo];
+    if (!estado) return '#64748b';
+    if (preferencias.contraste) return estado.colorContraste;
+    if (preferencias.daltonismo) return estado.colorDaltonismo;
+    return estado.color;
   }
   let toastTimer;
 

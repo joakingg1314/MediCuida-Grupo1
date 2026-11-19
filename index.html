@@ -39,7 +39,7 @@
         <div id="panel-login" class="auth-panel">
           <h2 id="login-title">Iniciar sesión</h2>
           <p>Ingresa con tu DNI y la contraseña que registraste.</p>
-          <form id="form-login" autocomplete="off">
+          <form id="form-login" method="post" autocomplete="off">
             <label for="dni-login">DNI</label>
             <input id="dni-login" name="dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Ingresa tu DNI" autocomplete="username" required />
             <label for="contrasena-login">Contraseña</label>
@@ -52,7 +52,7 @@
         <div id="panel-registro" class="auth-panel" hidden>
           <h2>Crear usuario</h2>
           <p>Registra una cuenta para ingresar luego con tu DNI.</p>
-          <form id="form-registro" autocomplete="off">
+          <form id="form-registro" method="post" autocomplete="off">
             <label for="reg-rol">Rol de usuario</label>
             <select id="reg-rol" name="rol" required aria-describedby="reg-rol-ayuda">
               <option value="" selected disabled>Selecciona tu rol</option>

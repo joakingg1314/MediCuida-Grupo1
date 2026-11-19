@@ -9,6 +9,11 @@ const js = fs.readFileSync(path.join(root, "app.js"), "utf8");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 
+// Evita que un error de sintaxis desactive silenciosamente todos los eventos del frontend.
+new vm.Script(js, {filename: "app.js"});
+assert.ok(html.includes('<form id="form-login" method="post"'), "El login no debe enviar credenciales por GET");
+assert.ok(html.includes('<form id="form-registro" method="post"'), "El registro no debe enviar credenciales por GET");
+
 function between(start, end) {
   const a = js.indexOf(start), b = js.indexOf(end, a);
   assert.ok(a >= 0 && b > a, "No se encontró el código: " + start);
