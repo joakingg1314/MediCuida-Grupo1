@@ -1494,3 +1494,64 @@ textarea {
   .row-buttons .btn {flex:1}
   .role-lookup .btn {width:100%}
 }
+
+
+/* FILTROS DE STOCK Y ACCESIBILIDAD REFORZADA */
+.inventory-filter-panel { margin: 0 0 18px; }
+.status-badge { border: 1px solid transparent; }
+body.colorblind-safe .status-badge.available {
+  background: #e6f2fb; color: #004b87; border-color: #0072b2;
+}
+body.colorblind-safe .status-badge.critical {
+  background: #fff2d6; color: #704600; border-color: #b87500;
+}
+body.colorblind-safe .status-badge.unavailable {
+  background: #f7e9f2; color: #67234f; border-color: #9b4f7e;
+}
+body.colorblind-safe .status-mark.ok { background: #0072b2; }
+body.colorblind-safe .status-mark.warning { background: #e69f00; }
+body.colorblind-safe .status-mark.off { background: #9b4f7e; }
+body.high-contrast {
+  background: #fff; color: #101820;
+  --ink: #101820; --muted: #243746; --line: #243746; --soft: #fff;
+}
+body.high-contrast .site-header,
+body.high-contrast .footer,
+body.high-contrast .content-card,
+body.high-contrast .chart-card,
+body.high-contrast .metric-card,
+body.high-contrast .feature-card,
+body.high-contrast .stock-card,
+body.high-contrast .filter-panel,
+body.high-contrast .login-card {
+  background: #fff; color: #101820; border: 2px solid #172b3a;
+}
+body.high-contrast p,
+body.high-contrast small,
+body.high-contrast label,
+body.high-contrast .muted,
+body.high-contrast .subtle-note,
+body.high-contrast .stock-card .code { color: #172b3a; }
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+  color: #101820; background: #fff; border: 2px solid #263b4b;
+}
+body.high-contrast input::placeholder,
+body.high-contrast textarea::placeholder { color: #435565; opacity: 1; }
+body.high-contrast .btn-primary {
+  background: #003f78; color: #fff; border: 2px solid #002b52;
+}
+body.high-contrast .btn-soft,
+body.high-contrast .btn-outline {
+  color: #003f78; background: #fff; border: 2px solid #003f78;
+}
+body.high-contrast .status-badge {
+  background: #fff; border-width: 2px; font-weight: 900;
+}
+body.high-contrast .status-badge.available { color: #004b87; border-color: #004b87; }
+body.high-contrast .status-badge.critical { color: #704000; border-color: #8a5100; }
+body.high-contrast .status-badge.unavailable { color: #761d37; border-color: #761d37; }
+body.high-contrast a,
+body.high-contrast .text-link { color: #003f78; text-decoration: underline; }
+body.high-contrast :focus-visible { outline: 3px solid #a64b00; outline-offset: 3px; }

@@ -28,9 +28,9 @@
     }
   }
   const ESTADOS = {
-    disponible: { texto: 'Disponible', clase: 'available', color: '#199769' },
-    critico: { texto: 'Stock crítico', clase: 'critical', color: '#e0a12f' },
-    agotado: { texto: 'Sin stock', clase: 'unavailable', color: '#ca5c62' }
+    disponible: { texto: 'Disponible', clase: 'available', color: '#199769', colorDaltonismo: '#0072B2', colorContraste: '#004B87', icono: '✓' },
+    critico: { texto: 'Stock crítico', clase: 'critical', color: '#e0a12f', colorDaltonismo: '#E69F00', colorContraste: '#7A4300', icono: '!' },
+    agotado: { texto: 'Sin stock', clase: 'unavailable', color: '#ca5c62', colorDaltonismo: '#CC79A7', colorContraste: '#761D37', icono: '×' }
   };
 
   const $ = selector => document.querySelector(selector);
@@ -69,14 +69,21 @@
   const identificador = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
   let tratamientos = storageRead(TREAT_KEY, []);
   if (!Array.isArray(tratamientos)) tratamientos = [];
-  let preferencias = storageRead(PREF_KEY, { texto:false, contraste:false, voz:false });
-  if (!preferencias || typeof preferencias !== 'object') preferencias = { texto:false, contraste:false, voz:false };
+  let preferencias = storageRead(PREF_KEY, { texto:false, contraste:false, daltonismo:false, voz:false });
+  if (!preferencias || typeof preferencias !== 'object') preferencias = { texto:false, contraste:false, daltonismo:false, voz:false };
+  if (typeof preferencias.daltonismo !== 'boolean') preferencias.daltonismo = false;
+  function colorEstado(tipo) {
+    if (preferencias.contraste) return colorEstado(tipo)Contraste;
+    if (preferencias.daltonismo) return colorEstado(tipo)Daltonismo;
+    return colorEstado(tipo);
+  }
   let toastTimer;
 
   function aviso(texto) {
     const toast = $('#toast');
     toast.textContent = texto;
     toast.hidden = false;
+    hablar(texto);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { toast.hidden = true; }, 4300);
   }
@@ -174,6 +181,7 @@
     } catch (err) {
       error.textContent = err.message;
       error.hidden = false;
+      hablar(err.message);
       $('#contrasena-login').value = '';
       $('#contrasena-login').focus();
     } finally {
@@ -210,6 +218,7 @@
     } catch (err) {
       error.textContent = err.message;
       error.hidden = false;
+      hablar(err.message);
     } finally {
       boton.disabled = false;
     }
@@ -221,6 +230,7 @@
       input.type = mostrar ? 'text' : 'password';
       $(botonId).textContent = mostrar ? 'Ocultar' : 'Ver';
       $(botonId).setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      hablar(mostrar ? 'Contraseña visible.' : 'Contraseña oculta.');
     });
   });
   $('#cerrar-sesion').addEventListener('click', async () => {
@@ -229,6 +239,7 @@
     inventario = [];
     actualizarDatosUsuario(null);
     mostrarLogin();
+    aviso('Sesión cerrada correctamente.');
   });
 
   // ------------------------ NAVEGACIÓN ------------------------
@@ -256,7 +267,14 @@
   }
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-view]');
-    if (button) mostrarVista(button.dataset.view);
+    if (!button) return;
+    const nombre = button.dataset.view;
+    mostrarVista(nombre);
+    const section = $('#vista-' + nombre);
+    if (section && !section.hidden) {
+      const heading = section.querySelector('h1');
+      hablar('Sección abierta: ' + (heading?.textContent || nombre) + '.');
+    }
   });
 
   // ------------------------ INVENTARIO FICTICIO ------------------------
@@ -264,6 +282,9 @@
     if (stock === 0) return 'agotado';
     if (stock <= 10) return 'critico';
     return 'disponible';
+  }
+  function cumpleFiltroStock(item, filtro = '') {
+    return !filtro || determinarEstado(item.stock) === filtro;
   }
   function llenarSelect(id, valores) {
     const select = $(id);
@@ -297,46 +318,59 @@
       mostrarInventario();
     }
   }
-  function registrosFiltrados(categoria, establecimiento, busqueda = '') {
+  function registrosFiltrados(categoria, establecimiento, busqueda = '', estado = '') {
     const term = busqueda.trim().toLocaleLowerCase('es');
     return inventario.filter(item =>
       (!categoria || item.categoria === categoria) &&
       (!establecimiento || item.establecimiento === establecimiento) &&
-      (!term || `${item.id} ${item.nombre} ${item.categoria} ${item.establecimiento}`.toLocaleLowerCase('es').includes(term))
+      (!term || (item.id + ' ' + item.nombre + ' ' + item.categoria + ' ' + item.establecimiento).toLocaleLowerCase('es').includes(term)) &&
+      cumpleFiltroStock(item, estado)
     );
   }
   function badgeEstado(estado) {
-    return create('span', `status-badge ${ESTADOS[estado].clase}`, ESTADOS[estado].texto);
+    const badge = create('span', 'status-badge ' + ESTADOS[estado].clase, ESTADOS[estado].icono + ' ' + ESTADOS[estado].texto);
+    badge.setAttribute('aria-label', ESTADOS[estado].texto);
+    return badge;
   }
-  function mostrarResultados() {
-    const datos = registrosFiltrados($('#categoria-consulta').value,$('#establecimiento-consulta').value,$('#buscar-stock').value);
-    $('#total-resultados').textContent = `${datos.length} ${datos.length === 1 ? 'registro encontrado' : 'registros encontrados'} · datos simulados`;
+  function mostrarResultados(anunciar = false) {
+    const estado = $('#estado-consulta').value;
+    const datos = registrosFiltrados($('#categoria-consulta').value,$('#establecimiento-consulta').value,$('#buscar-stock').value,estado);
+    $('#total-resultados').textContent = datos.length + ' ' + (datos.length === 1 ? 'registro encontrado' : 'registros encontrados') + ' · datos simulados';
     const grid = $('#resultados-stock');
     grid.replaceChildren();
-    if (!datos.length) { grid.append(create('p','empty-state','No se encontraron medicamentos con esos filtros.')); return; }
+    if (!datos.length) {
+      grid.append(create('p','empty-state','No se encontraron medicamentos con esos filtros.'));
+      if (anunciar) hablar('No se encontraron medicamentos con los filtros seleccionados.');
+      return;
+    }
     const fragmento = document.createDocumentFragment();
     datos.forEach(item => {
-      const estado = determinarEstado(item.stock);
+      const estadoItem = determinarEstado(item.stock);
       const tarjeta = create('article','stock-card');
       const top = create('div','stock-card-top');
-      top.append(create('span','stock-symbol','✚'), badgeEstado(estado));
-      tarjeta.append(top, create('h3','',item.nombre),create('p','code',`Código: ${item.id}`),create('p','category',item.categoria));
+      top.append(create('span','stock-symbol','✚'), badgeEstado(estadoItem));
+      tarjeta.append(top, create('h3','',item.nombre),create('p','code','Código: ' + item.id),create('p','category',item.categoria));
       const datosTarjeta = create('div','stock-meta');
-      [['Establecimiento',item.establecimiento],['Stock de ejemplo',`${item.stock} unidades`]].forEach(([nombre,valor]) => {
+      [['Establecimiento',item.establecimiento],['Stock de ejemplo',item.stock + ' unidades']].forEach(([nombre,valor]) => {
         const fila = create('div');fila.append(create('span','',nombre),create('strong','',valor));datosTarjeta.append(fila);
       });
       tarjeta.append(datosTarjeta); fragmento.append(tarjeta);
     });
     grid.append(fragmento);
+    if (anunciar) {
+      const detalle = estado ? ' con estado ' + ESTADOS[estado].texto : '';
+      hablar('Se encontraron ' + datos.length + ' ' + (datos.length === 1 ? 'medicamento' : 'medicamentos') + detalle + '.');
+    }
   }
-  $('#form-consulta').addEventListener('submit', event => {event.preventDefault();mostrarResultados();});
-  ['#categoria-consulta','#establecimiento-consulta'].forEach(id => $(id).addEventListener('change',mostrarResultados));
-  $('#buscar-stock').addEventListener('input', mostrarResultados);
+  $('#form-consulta').addEventListener('submit', event => {event.preventDefault();mostrarResultados(true);});
+  ['#categoria-consulta','#establecimiento-consulta','#estado-consulta'].forEach(id => $(id).addEventListener('change',()=>mostrarResultados(true)));
+  $('#buscar-stock').addEventListener('input',()=>mostrarResultados(false));
   $('#limpiar-consulta').addEventListener('click', () => {
     $('#buscar-stock').value = '';
     $('#categoria-consulta').value = '';
     $('#establecimiento-consulta').value = '';
-    mostrarResultados();
+    $('#estado-consulta').value = '';
+    mostrarResultados(true);
   });
 
   // ------------------------ INDICADORES Y GRÁFICOS ------------------------
@@ -384,13 +418,13 @@
     const segmentos = grupos.map(tipo => {
       const desde = posicion;
       posicion += total ? cantidad[tipo]/total*100 : 0;
-      return `${ESTADOS[tipo].color} ${desde}% ${posicion}%`;
+      return `${colorEstado(tipo)} ${desde}% ${posicion}%`;
     });
     $('#grafico-dona').style.background = total ? `conic-gradient(${segmentos.join(',')})` : '#e7eef4';
     const leyenda = $('#leyenda-dona');leyenda.replaceChildren();
     grupos.forEach(tipo => {
       const fila = create('div','legend-row');
-      const punto = create('span','legend-dot'); punto.style.backgroundColor = ESTADOS[tipo].color;
+      const punto = create('span','legend-dot'); punto.style.backgroundColor = colorEstado(tipo);
       fila.append(punto,create('span','',`${ESTADOS[tipo].texto}: ${cantidad[tipo]}`));leyenda.append(fila);
     });
     $('#grafico-dona').setAttribute('aria-label',grupos.map(t => `${ESTADOS[t].texto}: ${cantidad[t]}`).join('; '));
@@ -446,18 +480,23 @@
     $('#med-cancelar').hidden = true;
     $('#med-feedback').textContent = '';
   }
-  function mostrarInventario() {
+  function mostrarInventario(anunciar = false) {
     const tbody = $('#tabla-inventario');
+    const busqueda = $('#buscar-inventario').value;
+    const estadoFiltro = $('#estado-inventario').value;
+    const datos = registrosFiltrados('', '', busqueda, estadoFiltro);
     tbody.replaceChildren();
-    $('#inventario-total').textContent = `${inventario.length} ${inventario.length === 1 ? 'medicamento registrado' : 'medicamentos registrados'} (con respaldo en PostgreSQL)`;
-    if (!inventario.length) {
+    $('#inventario-total').textContent = datos.length + ' de ' + inventario.length + ' medicamentos mostrados (con respaldo en PostgreSQL)';
+    if (!datos.length) {
       const fila = document.createElement('tr');
-      const celda = create('td', '', 'No hay medicamentos. Agrega uno con el formulario.');
+      const mensaje = inventario.length ? 'No hay medicamentos que coincidan con los filtros.' : 'No hay medicamentos. Agrega uno con el formulario.';
+      const celda = create('td', '', mensaje);
       celda.colSpan = 7;
       fila.append(celda); tbody.append(fila);
+      if (anunciar) hablar('No hay medicamentos que coincidan con los filtros del inventario.');
       return;
     }
-    inventario.forEach(med => {
+    datos.forEach(med => {
       const fila = document.createElement('tr');
       [med.id, med.nombre, med.categoria, med.establecimiento, String(med.stock)].forEach(value => fila.append(create('td','',value)));
       const estado = create('td');
@@ -466,41 +505,60 @@
       const acciones = create('td', 'inventory-actions');
       const editar = create('button', 'btn btn-soft btn-sm', 'Editar');
       editar.type = 'button';
-      editar.setAttribute('aria-label', `Editar ${med.nombre} (${med.id})`);
+      editar.setAttribute('aria-label', 'Editar ' + med.nombre + ' (' + med.id + ')');
       editar.addEventListener('click', () => {
         $('#med-id').value = med.id;
         $('#med-nombre').value = med.nombre;
         $('#med-categoria').value = med.categoria;
         $('#med-establecimiento').value = med.establecimiento;
         $('#med-stock').value = String(med.stock);
-        $('#med-form-title').textContent = `Editar ${med.id}`;
+        $('#med-form-title').textContent = 'Editar ' + med.id;
         $('#med-guardar').textContent = 'Guardar cambios';
         $('#med-cancelar').hidden = false;
-        $('#med-feedback').textContent = `Editando ${med.id}.`;
+        $('#med-feedback').textContent = 'Editando ' + med.id + '.';
         $('#med-nombre').focus();
         $('#med-nombre').scrollIntoView({behavior:'smooth',block:'center'});
+        hablar('Formulario de edición abierto para ' + med.nombre + '.');
       });
       const eliminar = create('button', 'btn btn-danger btn-sm', 'Eliminar');
       eliminar.type = 'button';
-      eliminar.setAttribute('aria-label', `Eliminar ${med.nombre} (${med.id})`);
+      eliminar.setAttribute('aria-label', 'Eliminar ' + med.nombre + ' (' + med.id + ')');
       eliminar.addEventListener('click', async () => {
-        if (!window.confirm(`¿Eliminar permanentemente ${med.nombre} (${med.id}) del inventario?`)) return;
+        if (!window.confirm('¿Eliminar permanentemente ' + med.nombre + ' (' + med.id + ') del inventario?')) return;
         eliminar.disabled = true;
         try {
-          await api(`/api/medicamentos/${encodeURIComponent(med.id)}`, {method:'DELETE'});
+          await api('/api/medicamentos/' + encodeURIComponent(med.id), {method:'DELETE'});
           if ($('#med-id').value === med.id) resetFormularioInventario();
           await cargarInventario();
-          aviso(`Medicamento ${med.id} eliminado del inventario.`);
+          aviso('Medicamento ' + med.id + ' eliminado del inventario.');
         } catch(err) {
-          aviso(`No se pudo eliminar: ${err.message}`);
+          aviso('No se pudo eliminar: ' + err.message);
           eliminar.disabled = false;
         }
       });
       acciones.append(editar, eliminar); fila.append(acciones);
       tbody.append(fila);
     });
+    if (anunciar) {
+      const detalle = estadoFiltro ? ' Estado: ' + ESTADOS[estadoFiltro].texto + '.' : ' Todos los estados.';
+      hablar('Se muestran ' + datos.length + ' de ' + inventario.length + ' medicamentos.' + detalle);
+    }
   }
-  $('#med-cancelar').addEventListener('click',resetFormularioInventario);
+  $('#med-cancelar').addEventListener('click',() => {
+    resetFormularioInventario();
+    hablar('Edición cancelada. El formulario está listo para agregar un medicamento.');
+  });
+  $('#form-filtro-inventario').addEventListener('submit',event => {
+    event.preventDefault();
+    mostrarInventario(true);
+  });
+  $('#buscar-inventario').addEventListener('input',()=>mostrarInventario(false));
+  $('#estado-inventario').addEventListener('change',()=>mostrarInventario(true));
+  $('#limpiar-inventario').addEventListener('click',() => {
+    $('#buscar-inventario').value='';
+    $('#estado-inventario').value='';
+    mostrarInventario(true);
+  });
   $('#actualizar-inventario').addEventListener('click',async () => {
     try { await cargarInventario(); aviso('Inventario actualizado desde el servidor.'); }
     catch(err) { aviso(err.message); }
@@ -526,7 +584,7 @@
       await cargarInventario();
       resetFormularioInventario();
       aviso(id ? 'Medicamento actualizado correctamente.' : 'Medicamento agregado correctamente.');
-    } catch(err) { feedback.textContent = err.message; }
+    } catch(err) { feedback.textContent = err.message; hablar(err.message); }
     finally { boton.disabled = false; }
   });
 
@@ -607,6 +665,7 @@
       aviso(result.mensaje);
     } catch(error) {
       message.textContent = mensajeError(error);
+      hablar(mensajeError(error));
     }
   });
 
@@ -627,8 +686,11 @@
           const mark = create('button','btn btn-soft btn-sm','Marcar como leído');
           mark.type='button';
           mark.addEventListener('click',async()=>{
-            try { await api('/api/avisos/'+item.id+'/leer',{method:'POST'});await cargarAvisos(); }
-            catch(err){ aviso(mensajeError(err)); }
+            try {
+              await api('/api/avisos/'+item.id+'/leer',{method:'POST'});
+              await cargarAvisos();
+              aviso('Notificación marcada como leída.');
+            } catch(err){ aviso(mensajeError(err)); }
           });
           nota.append(mark);
         } else {
@@ -671,7 +733,7 @@
       feedback.textContent='«'+data.nombre+'» se guardó para el DNI '+result.tratamiento.titular_dni+'.';
       await mostrarTratamientos();
       aviso('Tratamiento de demostración guardado.');
-    }catch(err){feedback.textContent=mensajeError(err);}
+    }catch(err){feedback.textContent=mensajeError(err);hablar(mensajeError(err));}
     finally{button.disabled=false;}
   });
 
@@ -740,7 +802,6 @@
             await api('/api/tratamientos/'+trat.id+'/confirmar',{method:'POST'});
             await mostrarTratamientos();
             aviso('Toma de demostración confirmada.');
-            hablar('Toma de demostración confirmada correctamente.');
           }catch(err){aviso(mensajeError(err));confirmar.disabled=false;}
         });
         pie.append(confirmar);tarjeta.append(pie);destino.append(tarjeta);
@@ -757,11 +818,13 @@
   $('#trat-consultar-dni').addEventListener('click',async()=>{
     dniVistaTratamientos=tratarValor('#trat-dni-paciente');
     await mostrarTratamientos();
+    hablar('Lista de medicamentos actualizada.');
   });
   $('#trat-volver-mios').addEventListener('click',async()=>{
     dniVistaTratamientos='';
     $('#trat-dni-paciente').value='';
     await mostrarTratamientos();
+    hablar('Mostrando tus propios medicamentos.');
   });
 
   function abrirEditorTratamiento(trat){
@@ -805,7 +868,7 @@
       $('#dialog-edicion-trat').close();
       await mostrarTratamientos();
       aviso('Cambios guardados. Se notificará al paciente desde su cuenta.');
-    }catch(err){feedback.textContent=mensajeError(err);}
+    }catch(err){feedback.textContent=mensajeError(err);hablar(mensajeError(err));}
     finally{btn.disabled=false;}
   });
 
@@ -840,6 +903,7 @@
   $('#historial-buscar').addEventListener('click',async()=>{
     dniVistaHistorial=tratarValor('#historial-dni');
     await mostrarHistorial();
+    hablar('Historial actualizado.');
   });
   function celdaCSV(text){
     let valor=String(text??'');
@@ -862,22 +926,26 @@
   function aplicarPreferencias() {
     document.body.classList.toggle('large-text',Boolean(preferencias.texto));
     document.body.classList.toggle('high-contrast',Boolean(preferencias.contraste));
+    document.body.classList.toggle('colorblind-safe',Boolean(preferencias.daltonismo));
     $('#opcion-texto').checked=Boolean(preferencias.texto);
     $('#opcion-contraste').checked=Boolean(preferencias.contraste);
+    $('#opcion-daltonismo').checked=Boolean(preferencias.daltonismo);
     $('#opcion-voz').checked=Boolean(preferencias.voz);
   }
-  [['#opcion-texto','texto'],['#opcion-contraste','contraste'],['#opcion-voz','voz']].forEach(([selector,clave])=>{
+  [['#opcion-texto','texto'],['#opcion-contraste','contraste'],['#opcion-daltonismo','daltonismo'],['#opcion-voz','voz']].forEach(([selector,clave])=>{
     $(selector).addEventListener('change',event=>{
       preferencias[clave]=event.target.checked;
-      storageWrite(PREF_KEY,preferencias);aplicarPreferencias();
-      if(clave==='voz'&&preferencias.voz)hablar('Lectura en voz alta activada.');
+      storageWrite(PREF_KEY,preferencias);
+      aplicarPreferencias();
+      if(clave==='voz'&&preferencias.voz) aviso('Confirmaciones habladas activadas.');
+      else if(clave==='contraste') hablar(preferencias.contraste?'Modo de alto contraste activado.':'Modo de alto contraste desactivado.');
+      else if(clave==='daltonismo') hablar(preferencias.daltonismo?'Paleta apta para daltonismo activada.':'Paleta apta para daltonismo desactivada.');
     });
   });
   $('#probar-voz').addEventListener('click',()=>{
     if(!('speechSynthesis' in window)){aviso('Este navegador no ofrece síntesis de voz.');return;}
     if(!preferencias.voz){aviso('Activa la opción «Confirmaciones habladas» para probarla.');return;}
-    hablar('Bienvenido a MediCuida. Esta es una demostración de lectura accesible.');
-    aviso('Reproduciendo lectura de prueba, si el navegador lo permite.');
+    aviso('Bienvenido a MediCuida. Esta es una demostración de lectura accesible.');
   });
   $('#borrar-datos').addEventListener('click',()=>{
     if(!window.confirm('¿Borrar todos los tratamientos y el historial de esta demostración?'))return;

@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -15,3 +18,5 @@ jobs:
         run: python -m py_compile backend/server.py backend/seguimiento.py backend/persistencia.py
       - name: Probar roles y registros compartidos
         run: python -m unittest discover -s tests -v
+      - name: Probar filtros y accesibilidad del frontend
+        run: node tests/test_filtros.js
