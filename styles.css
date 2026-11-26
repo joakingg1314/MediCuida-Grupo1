@@ -1560,7 +1560,7 @@ body.high-contrast :focus-visible { outline: 3px solid #a64b00; outline-offset: 
 /* Panel de control ampliado, blog, contactos y vista previa de stock */
 .dashboard-section { margin-top:34px; }
 .dashboard-stock-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
-.dashboard-user-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.dashboard-user-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .dashboard-analytics-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
 .dashboard-analytics-grid .chart-card { min-width:0; }
 .dashboard-analytics-grid .data-table { min-width:460px; }

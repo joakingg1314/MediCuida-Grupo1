@@ -50,7 +50,7 @@ assert.equal(cumpleFiltroStock(records[0],""),true);
 assert.equal(cumpleFiltroStock(records[0],"agotado"),true);
 assert.equal(cumpleFiltroStock(records[0],"disponible"),false);
 
-for (const id of ["estado-consulta","estado-inventario","buscar-inventario","limpiar-inventario","opcion-daltonismo","opcion-texto","opcion-contraste","opcion-voz","reg-telefono","perfil-telefono","form-contacto","tabla-visitas-dashboard","tabla-medicos-dashboard","trat-contacto-persona"]) {
+for (const id of ["estado-consulta","estado-inventario","buscar-inventario","limpiar-inventario","opcion-daltonismo","opcion-texto","opcion-contraste","opcion-voz","reg-telefono","perfil-telefono","form-contacto","tabla-visitas-dashboard","tabla-medicos-dashboard","tabla-asignaciones-dashboard","metric-usuarios-ingresaron","metric-ingresos","trat-contacto-persona"]) {
   assert.ok(html.includes('id="'+id+'"'),"Falta el control "+id);
 }
 for (const value of ["disponible","critico","agotado"]) {

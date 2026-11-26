@@ -230,9 +230,11 @@ class Handler(BaseHTTPRequestHandler):
                 pacientes = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('paciente','ambos','medico')").fetchone()[0]
                 cuidadores = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('cuidador','ambos','medico')").fetchone()[0]
                 medicos = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol='medico'").fetchone()[0]
+                usuarios_ingresaron = c.execute("SELECT COUNT(DISTINCT dni) FROM visitas_pestanas WHERE vista='acceso'").fetchone()[0]
+                ingresos_totales = c.execute("SELECT COUNT(*) FROM visitas_pestanas WHERE vista='acceso'").fetchone()[0]
                 visitas = [dict(r) for r in c.execute("""
                     SELECT vista, COUNT(*) AS visitas, COUNT(DISTINCT dni) AS usuarios
-                    FROM visitas_pestanas GROUP BY vista ORDER BY visitas DESC, vista
+                    FROM visitas_pestanas WHERE vista <> 'acceso' GROUP BY vista ORDER BY visitas DESC, vista
                 """).fetchall()]
                 actividad_medicos = [dict(r) for r in c.execute("""
                     SELECT u.dni,
@@ -251,8 +253,21 @@ class Handler(BaseHTTPRequestHandler):
                        OR EXISTS (SELECT 1 FROM avisos a WHERE a.medico_dni=u.dni)
                     ORDER BY registros DESC, nombre
                 """).fetchall()]
+                asignaciones = [dict(r) for r in c.execute("""
+                    SELECT t.autor_dni AS medico_dni,
+                        COALESCE(MAX(t.medico_nombre),'Médico') AS medico,
+                        COALESCE(MAX(TRIM(COALESCE(p.nombres,'') || ' ' || COALESCE(p.apellidos,''))),'Paciente') AS paciente,
+                        substr(t.titular_dni,-4) AS dni_final,
+                        COUNT(*) AS registros
+                    FROM tratamientos t
+                    LEFT JOIN usuarios p ON p.dni=t.titular_dni
+                    WHERE t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni
+                    GROUP BY t.autor_dni,t.titular_dni
+                    ORDER BY registros DESC, medico, paciente
+                """).fetchall()]
             return self.json_out(200, {
-                "usuarios": {"total": total_usuarios, "pacientes": pacientes, "cuidadores": cuidadores, "medicos": medicos},
+                "usuarios": {"total": total_usuarios, "pacientes": pacientes, "cuidadores": cuidadores, "medicos": medicos,
+                             "ingresaron": usuarios_ingresaron, "accesos": ingresos_totales},
                 "visitas": visitas,
                 "medicos": {
                     "con_registros": sum(1 for r in actividad_medicos if int(r["registros"] or 0) > 0),
@@ -260,7 +275,8 @@ class Handler(BaseHTTPRequestHandler):
                     "asignados": sum(int(r["asignados"] or 0) for r in actividad_medicos),
                     "pacientes": sum(int(r["pacientes"] or 0) for r in actividad_medicos),
                     "detalle": actividad_medicos
-                }
+                },
+                "asignaciones": asignaciones
             })
         if path=="/api/medicamentos":
             if not self.auth(): return
@@ -345,6 +361,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_out(401,{"error":"DNI o contraseña incorrectos."})
             account=user(row); token=secrets.token_urlsafe(32)
             with LOCK: SESSIONS[token]={"expiry":time.time()+SESSION_AGE,"usuario":account}
+            with connect() as c:
+                c.execute("INSERT INTO visitas_pestanas(dni,rol,vista) VALUES(?,?,?)",(account["dni"],account["rol"],"acceso"))
             return self.json_out(200,{"ok":True,"usuario":account},self.new_cookie(token,SESSION_AGE))
         if path=="/api/medicamentos":
             if not self.auth_medico(): return

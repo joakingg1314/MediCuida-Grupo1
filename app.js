@@ -470,6 +470,8 @@
       $('#metric-usuarios-pacientes').textContent = String(u.pacientes || 0);
       $('#metric-usuarios-cuidadores').textContent = String(u.cuidadores || 0);
       $('#metric-usuarios-medicos').textContent = String(u.medicos || 0);
+      $('#metric-usuarios-ingresaron').textContent = String(u.ingresaron || 0);
+      $('#metric-ingresos').textContent = String(u.accesos || 0);
       const actividad = data.medicos || {};
       $('#metric-medicos-activos').textContent = String(actividad.con_registros || 0);
       $('#metric-registros-asignados').textContent = String(actividad.asignados || 0);
@@ -494,11 +496,24 @@
         const row=create('tr'); const cell=create('td','','Todavía no hay registros médicos.');
         cell.colSpan=5; row.append(cell); medicosBody.append(row);
       }
+      const asignacionesBody=$('#tabla-asignaciones-dashboard');
+      asignacionesBody.replaceChildren();
+      (data.asignaciones || []).forEach(item=>{
+        const row=create('tr');
+        [item.medico,item.paciente,item.dni_final,String(item.registros)].forEach(value=>row.append(create('td','',value)));
+        asignacionesBody.append(row);
+      });
+      if (!asignacionesBody.children.length) {
+        const row=create('tr'); const cell=create('td','','Aún no hay asignaciones a pacientes.');
+        cell.colSpan=4; row.append(cell); asignacionesBody.append(row);
+      }
     } catch (err) {
       visitasBody.replaceChildren();
       medicosBody.replaceChildren();
       const visitRow=create('tr'); const visitCell=create('td','',mensajeError(err)); visitCell.colSpan=3; visitRow.append(visitCell); visitasBody.append(visitRow);
       const doctorRow=create('tr'); const doctorCell=create('td','', 'No se pudieron cargar las estadísticas.'); doctorCell.colSpan=5; doctorRow.append(doctorCell); medicosBody.append(doctorRow);
+      const asignacionesBody=$('#tabla-asignaciones-dashboard');
+      const assignmentRow=create('tr'); const assignmentCell=create('td','','No se pudieron cargar las asignaciones.'); assignmentCell.colSpan=4; assignmentRow.append(assignmentCell); asignacionesBody.replaceChildren(assignmentRow);
     }
   }
   function graficoCategorias(datos) {
