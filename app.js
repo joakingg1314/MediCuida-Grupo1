@@ -5,8 +5,8 @@
 (() => {
   const TREAT_KEY = 'medicuida_tratamientos_demo_v1';
   const PREF_KEY = 'medicuida_preferencias_demo_v1';
-  const VISTAS = ['inicio','consulta','dashboard','inventario','tratamientos','historial','ayuda','perfil'];
-  const VISTAS_NO_MEDICO = ['inicio','consulta','tratamientos','historial','ayuda','perfil'];
+  const VISTAS = ['inicio','consulta','dashboard','inventario','tratamientos','historial','ayuda','blog','perfil'];
+  const VISTAS_NO_MEDICO = ['inicio','consulta','tratamientos','historial','ayuda','blog','perfil'];
   let rolActual = null;
   const puedeAbrirVista = nombre => VISTAS.includes(nombre) && (rolActual === 'medico' || VISTAS_NO_MEDICO.includes(nombre));
   function actualizarNavegacionPorRol() {
@@ -69,14 +69,19 @@
   const identificador = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
   let tratamientos = storageRead(TREAT_KEY, []);
   if (!Array.isArray(tratamientos)) tratamientos = [];
-  let preferencias = storageRead(PREF_KEY, { texto:false, contraste:false, daltonismo:false, voz:false });
-  if (!preferencias || typeof preferencias !== 'object') preferencias = { texto:false, contraste:false, daltonismo:false, voz:false };
-  if (typeof preferencias.daltonismo !== 'boolean') preferencias.daltonismo = false;
+  let preferencias = storageRead(PREF_KEY, { texto:'mediano', contraste:'normal', daltonismo:'ninguno', voz:false });
+  if (!preferencias || typeof preferencias !== 'object') preferencias = { texto:'mediano', contraste:'normal', daltonismo:'ninguno', voz:false };
+  if (typeof preferencias.texto === 'boolean') preferencias.texto = preferencias.texto ? 'grande' : 'mediano';
+  if (!['mediano','grande','muy-grande'].includes(preferencias.texto)) preferencias.texto = 'mediano';
+  if (typeof preferencias.contraste === 'boolean') preferencias.contraste = preferencias.contraste ? 'negro' : 'normal';
+  if (!['normal','negro','verde','rojo','azul','blanco'].includes(preferencias.contraste)) preferencias.contraste = 'normal';
+  if (typeof preferencias.daltonismo === 'boolean') preferencias.daltonismo = preferencias.daltonismo ? 'deuteranopia' : 'ninguno';
+  if (!['ninguno','protanopia','deuteranopia','tritanopia'].includes(preferencias.daltonismo)) preferencias.daltonismo = 'ninguno';
   function colorEstado(tipo) {
     const estado = ESTADOS[tipo];
     if (!estado) return '#64748b';
-    if (preferencias.contraste) return estado.colorContraste;
-    if (preferencias.daltonismo) return estado.colorDaltonismo;
+    if (preferencias.contraste !== 'normal') return estado.colorContraste;
+    if (preferencias.daltonismo !== 'ninguno') return estado.colorDaltonismo;
     return estado.color;
   }
   let toastTimer;
@@ -110,6 +115,8 @@
     $('#perfil-apellidos').textContent = usuario?.apellidos || '-';
     $('#perfil-dni').textContent = usuario?.dni || '-';
     $('#perfil-correo').textContent = usuario?.correo || '-';
+    $('#perfil-telefono-texto').textContent = usuario?.telefono || 'No registrado';
+    $('#perfil-telefono').value = usuario?.telefono || '';
     const nombresRoles = { paciente:'Paciente', cuidador:'Cuidador', ambos:'Paciente y Cuidador', medico:'Médico' };
     $('#perfil-rol').textContent = nombresRoles[usuario?.rol] || '-';
     $('#perfil-cuidador').hidden = usuario?.rol !== 'cuidador';
@@ -205,6 +212,7 @@
           apellidos: $('#reg-apellidos').value.trim(),
           dni: $('#reg-dni').value.trim(),
           correo: $('#reg-email').value.trim(),
+          telefono: $('#reg-telefono').value.trim(),
           dni_paciente: $('#reg-rol').value === 'cuidador' ? $('#reg-dni-paciente').value.trim() : null,
           ruc: $('#reg-rol').value === 'medico' ? $('#reg-ruc').value.trim() : null,
           puesto: $('#reg-rol').value === 'medico' ? $('#reg-puesto').value.trim() : null,
@@ -245,6 +253,28 @@
   });
 
   // ------------------------ NAVEGACIÓN ------------------------
+  async function registrarVisita(vista) {
+    if (!usuarioActual) return;
+    try { await api('/api/visitas', {method:'POST', body:JSON.stringify({vista})}); }
+    catch { /* La navegación debe seguir funcionando aunque falle el contador. */ }
+  }
+  function anunciarVista(nombre) {
+    if (!preferencias.voz) return;
+    const descripciones = {
+      inicio:'Aquí puedes conocer el objetivo de MediCuida y acceder rápidamente a las principales funciones.',
+      consulta:'Aquí puedes buscar medicamentos, filtrar por categoría, establecimiento y estado del stock. Si eres médico, también puedes iniciar la asignación de un medicamento a un paciente.',
+      dashboard:'Aquí puedes revisar el inventario, los usuarios registrados, las visitas de cada pestaña y las estadísticas de los médicos.',
+      inventario:'Aquí puedes registrar medicamentos, indicar unidades en stock, editar o eliminar registros y separarlos por disponibilidad.',
+      tratamientos:'Aquí puedes registrar tratamientos de demostración, consultar los medicamentos de un paciente, confirmar tomas y revisar avisos de cambios.',
+      historial:'Aquí puedes consultar las tomas confirmadas y, si tienes permisos, revisar el historial de un paciente por DNI.',
+      ayuda:'Aquí encontrarás instrucciones para utilizar las funciones principales y entender los estados de disponibilidad.',
+      blog:'Aquí encontrarás novedades, orientación sobre el uso del sistema y enlaces a fuentes oficiales del Ministerio de Salud.',
+      perfil:'Aquí puedes cambiar el tamaño del texto, el color y contraste de la interfaz, la adaptación para daltonismo, activar el asistente de voz y actualizar tu celular.'
+    };
+    const titulo = $('#vista-'+nombre)?.querySelector('h1')?.textContent || nombre;
+    hablar('Acabas de ingresar a la pestaña '+titulo+'. '+(descripciones[nombre] || 'Puedes explorar las opciones disponibles en esta sección.'));
+  }
+
   function mostrarVista(nombre) {
     if ($('#aplicacion').hidden || !VISTAS.includes(nombre)) return;
     if (!puedeAbrirVista(nombre)) {
@@ -263,6 +293,8 @@
     if (nombre === 'inventario' && rolActual === 'medico') mostrarInventario();
     if (nombre === 'tratamientos') mostrarTratamientos();
     if (nombre === 'historial') mostrarHistorial();
+    registrarVisita(nombre);
+    anunciarVista(nombre);
     window.scrollTo({top:0, behavior:'instant'});
     const heading = $(`#vista-${nombre} h1`);
     if (heading) { heading.tabIndex = -1; heading.focus({preventScroll:true}); }
@@ -270,13 +302,7 @@
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-view]');
     if (!button) return;
-    const nombre = button.dataset.view;
-    mostrarVista(nombre);
-    const section = $('#vista-' + nombre);
-    if (section && !section.hidden) {
-      const heading = section.querySelector('h1');
-      hablar('Sección abierta: ' + (heading?.textContent || nombre) + '.');
-    }
+    mostrarVista(button.dataset.view);
   });
 
   // ------------------------ INVENTARIO FICTICIO ------------------------
@@ -356,13 +382,42 @@
       [['Establecimiento',item.establecimiento],['Stock de ejemplo',item.stock + ' unidades']].forEach(([nombre,valor]) => {
         const fila = create('div');fila.append(create('span','',nombre),create('strong','',valor));datosTarjeta.append(fila);
       });
-      tarjeta.append(datosTarjeta); fragmento.append(tarjeta);
+      tarjeta.append(datosTarjeta);
+      if (rolActual === 'medico') {
+        const asignar = create('button','btn btn-soft btn-sm',item.stock === 0 ? 'Sin stock para asignar' : 'Asignar a paciente');
+        asignar.type = 'button';
+        asignar.disabled = item.stock === 0;
+        asignar.addEventListener('click',()=>prepararAsignacion(item));
+        tarjeta.append(asignar);
+      }
+      fragmento.append(tarjeta);
     });
     grid.append(fragmento);
     if (anunciar) {
       const detalle = estado ? ' con estado ' + ESTADOS[estado].texto : '';
       hablar('Se encontraron ' + datos.length + ' ' + (datos.length === 1 ? 'medicamento' : 'medicamentos') + detalle + '.');
     }
+  }
+  function prepararAsignacion(item) {
+    if (rolActual !== 'medico') return;
+    if (item.stock <= 0) {
+      aviso('No se puede asignar desde un registro que figura sin stock.');
+      return;
+    }
+    if (item.stock <= 10 && !window.confirm('Este medicamento figura con stock crítico ('+item.stock+' unidades de ejemplo). ¿Deseas continuar con el registro para el paciente?')) return;
+    $('#trat-nombre').value = item.nombre;
+    $('#trat-dosis').value = '';
+    $('#trat-forma').value = '';
+    $('#trat-dni-paciente').value = '';
+    $('#trat-medico-nombre').value = nombreCompleto();
+    $('#trat-motivo').value = '';
+    $('#trat-indicaciones').value = '';
+    $('#trat-stock-context').textContent = item.nombre+' · '+item.stock+' unidades · '+ESTADOS[determinarEstado(item.stock)].texto+'. Introduce el DNI de un paciente registrado y completa los datos del tratamiento de demostración.';
+    $('#trat-stock-context').hidden = false;
+    $('#trat-feedback').textContent = 'Medicamento seleccionado desde Disponibilidad.';
+    mostrarVista('tratamientos');
+    $('#trat-dni-paciente').focus();
+    hablar('Has seleccionado '+item.nombre+'. El stock de ejemplo es '+item.stock+' unidades. Ahora ingresa el DNI del paciente y completa los datos del registro.');
   }
   $('#form-consulta').addEventListener('submit', event => {event.preventDefault();mostrarResultados(true);});
   ['#categoria-consulta','#establecimiento-consulta','#estado-consulta'].forEach(id => $(id).addEventListener('change',()=>mostrarResultados(true)));
@@ -381,15 +436,61 @@
     const total = registros.length;
     const disponibles = registros.filter(item => item.stock > 0).length;
     const criticos = registros.filter(item => determinarEstado(item.stock) === 'critico').length;
+    const agotados = registros.filter(item => determinarEstado(item.stock) === 'agotado').length;
+    const unidades = registros.reduce((sum,item)=>sum+Number(item.stock||0),0);
     const porcentaje = total ? (disponibles / total * 100).toFixed(1) : '0.0';
     $('#metric-total').textContent = String(total);
     $('#metric-disponibles').textContent = String(disponibles);
     $('#metric-criticos').textContent = String(criticos);
+    $('#metric-agotados').textContent = String(agotados);
+    $('#metric-unidades').textContent = unidades.toLocaleString('es-PE');
     $('#metric-porcentaje').textContent = `${porcentaje}%`;
     $('#total-dona').textContent = String(total);
     graficoCategorias(registros);
     graficoDistribucion(registros);
     graficoEvolucion(registros);
+    cargarEstadisticasDashboard();
+  }
+  async function cargarEstadisticasDashboard() {
+    const visitasBody = $('#tabla-visitas-dashboard');
+    const medicosBody = $('#tabla-medicos-dashboard');
+    try {
+      const data = await api('/api/dashboard/estadisticas');
+      const u = data.usuarios || {};
+      $('#metric-usuarios-total').textContent = String(u.total || 0);
+      $('#metric-usuarios-pacientes').textContent = String(u.pacientes || 0);
+      $('#metric-usuarios-cuidadores').textContent = String(u.cuidadores || 0);
+      $('#metric-usuarios-medicos').textContent = String(u.medicos || 0);
+      const actividad = data.medicos || {};
+      $('#metric-medicos-activos').textContent = String(actividad.con_registros || 0);
+      $('#metric-registros-asignados').textContent = String(actividad.asignados || 0);
+      const nombres = {inicio:'Inicio',consulta:'Disponibilidad',dashboard:'Dashboard',inventario:'Administrar stock',tratamientos:'Mis medicamentos',historial:'Historial',ayuda:'Ayuda',blog:'Blog',perfil:'Accesibilidad'};
+      visitasBody.replaceChildren();
+      (data.visitas || []).forEach(item => {
+        const row = create('tr');
+        [nombres[item.vista] || item.vista, String(item.visitas), String(item.usuarios)].forEach(value=>row.append(create('td','',value)));
+        visitasBody.append(row);
+      });
+      if (!visitasBody.children.length) {
+        const row=create('tr'); const cell=create('td','','Aún no hay visitas registradas.');
+        cell.colSpan=3; row.append(cell); visitasBody.append(row);
+      }
+      medicosBody.replaceChildren();
+      (actividad.detalle || []).forEach(item => {
+        const row=create('tr');
+        [item.nombre, String(item.registros), String(item.asignados), String(item.pacientes), String(item.modificaciones)].forEach(value=>row.append(create('td','',value)));
+        medicosBody.append(row);
+      });
+      if (!medicosBody.children.length) {
+        const row=create('tr'); const cell=create('td','','Todavía no hay registros médicos.');
+        cell.colSpan=5; row.append(cell); medicosBody.append(row);
+      }
+    } catch (err) {
+      visitasBody.replaceChildren();
+      medicosBody.replaceChildren();
+      const visitRow=create('tr'); const visitCell=create('td','',mensajeError(err)); visitCell.colSpan=3; visitRow.append(visitCell); visitasBody.append(visitRow);
+      const doctorRow=create('tr'); const doctorCell=create('td','', 'No se pudieron cargar las estadísticas.'); doctorCell.colSpan=5; doctorRow.append(doctorCell); medicosBody.append(doctorRow);
+    }
   }
   function graficoCategorias(datos) {
     const destino = $('#grafico-categorias'); destino.replaceChildren();
@@ -474,8 +575,24 @@
   });
 
   // ------------------------ CRUD DE INVENTARIO · API con respaldo PostgreSQL ------------------------
+  function actualizarVistaPreviaStock() {
+    const campo = $('#med-stock');
+    const destino = $('#med-stock-preview');
+    if (!campo.value) {
+      destino.textContent = 'El estado del inventario aparecerá al introducir la cantidad.';
+      return;
+    }
+    const cantidad = Number(campo.value);
+    if (!Number.isInteger(cantidad) || cantidad < 0) {
+      destino.textContent = 'Ingresa una cantidad válida.';
+      return;
+    }
+    const estado = determinarEstado(cantidad);
+    destino.textContent = 'Estado que se registrará: '+ESTADOS[estado].texto+' · '+cantidad+' unidades.';
+  }
   function resetFormularioInventario() {
     $('#form-inventario').reset();
+    actualizarVistaPreviaStock();
     $('#med-id').value = '';
     $('#med-form-title').textContent = 'Agregar medicamento';
     $('#med-guardar').textContent = 'Agregar medicamento';
@@ -514,6 +631,7 @@
         $('#med-categoria').value = med.categoria;
         $('#med-establecimiento').value = med.establecimiento;
         $('#med-stock').value = String(med.stock);
+        actualizarVistaPreviaStock();
         $('#med-form-title').textContent = 'Editar ' + med.id;
         $('#med-guardar').textContent = 'Guardar cambios';
         $('#med-cancelar').hidden = false;
@@ -546,6 +664,7 @@
       hablar('Se muestran ' + datos.length + ' de ' + inventario.length + ' medicamentos.' + detalle);
     }
   }
+  $('#med-stock').addEventListener('input',actualizarVistaPreviaStock);
   $('#med-cancelar').addEventListener('click',() => {
     resetFormularioInventario();
     hablar('Edición cancelada. El formulario está listo para agregar un medicamento.');
@@ -602,12 +721,26 @@
   const mensajeError = error => error?.message || 'No se pudo completar la operación.';
   const tratarValor = id => $(id).value.trim();
 
+  function agregarAccesosContacto(destino, telefono) {
+    const digits = String(telefono || '').replace(/\\D/g,'').replace(/^51/,'');
+    if (!/^9[0-9]{8}$/.test(digits)) return false;
+    const llamar = create('a','btn btn-soft btn-sm','Llamar');
+    llamar.href = 'tel:+51'+digits;
+    const whatsapp = create('a','btn btn-soft btn-sm','WhatsApp');
+    whatsapp.href = 'https://wa.me/51'+digits;
+    whatsapp.target = '_blank';
+    whatsapp.rel = 'noopener noreferrer';
+    destino.append(llamar,whatsapp);
+    return true;
+  }
+
   function actualizarFormulariosPorRol() {
     const rol = rolActual;
     const supervisor = puedeSupervisar();
     const medico = rol === 'medico';
     $('#trat-destino-box').hidden = !supervisor;
     $('#historial-consulta').hidden = !supervisor;
+    $('#trat-dni-paciente').placeholder = rol === 'medico' ? 'DNI del paciente (vacío = mis propios medicamentos)' : 'DNI del paciente vinculado';
     $('#trat-medico-extra').hidden = !medico;
     ['#trat-medico-nombre','#trat-motivo','#trat-indicaciones'].forEach(id => {
       $(id).disabled = !medico;
@@ -732,6 +865,8 @@
       dniVistaTratamientos=data.dni_paciente;
       $('#form-tratamiento').reset();
       $('#trat-hora').value='08:00';
+      $('#trat-stock-context').hidden=true;
+      $('#trat-medico-nombre').value=rolActual === 'medico' ? nombreCompleto() : '';
       feedback.textContent='«'+data.nombre+'» se guardó para el DNI '+result.tratamiento.titular_dni+'.';
       await mostrarTratamientos();
       aviso('Tratamiento de demostración guardado.');
@@ -747,6 +882,18 @@
       const target=puedeSupervisar() ? dniVistaTratamientos : '';
       const data=await api('/api/tratamientos?dni='+encodeURIComponent(target));
       servidorTratamientos=data.tratamientos || [];
+      const panelContacto = $('#trat-contacto-persona');
+      const accionesContacto = $('#trat-contacto-acciones');
+      accionesContacto.replaceChildren();
+      if (data.dni !== propioDNI() && data.titular) {
+        panelContacto.hidden = false;
+        $('#trat-contacto-nombre').textContent = data.titular.nombre || 'Paciente';
+        $('#trat-contacto-numero').textContent = data.titular.telefono || 'No registrado';
+        if (data.titular.telefono) agregarAccesosContacto(accionesContacto,data.titular.telefono);
+        else accionesContacto.append(create('p','field-help','El paciente todavía no ha registrado un celular de contacto.'));
+      } else {
+        panelContacto.hidden = true;
+      }
       $('#trat-vista-persona').textContent = data.dni === propioDNI()
         ? 'Estos son tus propios medicamentos registrados en el servidor.'
         : 'Registros de demostración del paciente con DNI '+data.dni+'.';
@@ -766,6 +913,14 @@
         if(trat.medico_nombre)caja.append(create('p','muted','Médico: '+trat.medico_nombre));
         if(trat.motivo)caja.append(create('p','muted','Motivo: '+trat.motivo));
         if(trat.indicaciones)caja.append(create('p','muted','Administración: '+trat.indicaciones));
+        const telefonoProfesional = trat.medico_telefono || trat.autor_telefono;
+        const nombreProfesional = trat.medico_nombre || trat.autor_nombre;
+        if (telefonoProfesional) {
+          const contacto=create('div','treatment-contact');
+          contacto.append(create('p','muted','Contacto: '+(nombreProfesional || 'Responsable del registro')+' · '+telefonoProfesional));
+          agregarAccesosContacto(contacto,telefonoProfesional);
+          caja.append(contacto);
+        }
         encabezado.append(caja);
         const acciones=create('div','treatment-actions');
         if (rolActual === 'medico') {
@@ -812,6 +967,7 @@
     }catch(err){
       destino.replaceChildren(create('div','empty-state',mensajeError(err)));
       $('#trat-vista-persona').textContent='No se pudieron cargar los registros.';
+      $('#trat-contacto-persona').hidden=true;
       $('#trat-volver-mios').hidden=false;
       $('#avisos-tratamientos').hidden=true;
     }
@@ -902,6 +1058,23 @@
       $('#exportar-csv').disabled=true;
     }
   }
+  $('#form-contacto').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const feedback=$('#perfil-contacto-feedback');
+    const button=event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled=true;
+    feedback.textContent='Guardando número de contacto…';
+    try {
+      const result=await api('/api/contacto',{method:'POST',body:JSON.stringify({telefono:tratarValor('#perfil-telefono')})});
+      actualizarDatosUsuario(result.usuario);
+      feedback.textContent=result.mensaje;
+      aviso(result.mensaje);
+    } catch(err) {
+      feedback.textContent=mensajeError(err);
+      hablar(mensajeError(err));
+    } finally { button.disabled=false; }
+  });
+
   $('#historial-buscar').addEventListener('click',async()=>{
     dniVistaHistorial=tratarValor('#historial-dni');
     await mostrarHistorial();
@@ -926,29 +1099,47 @@
 
   // ------------------------ ACCESIBILIDAD ------------------------
   function aplicarPreferencias() {
-    document.body.classList.toggle('large-text',Boolean(preferencias.texto));
-    document.body.classList.toggle('high-contrast',Boolean(preferencias.contraste));
-    document.body.classList.toggle('colorblind-safe',Boolean(preferencias.daltonismo));
-    $('#opcion-texto').checked=Boolean(preferencias.texto);
-    $('#opcion-contraste').checked=Boolean(preferencias.contraste);
-    $('#opcion-daltonismo').checked=Boolean(preferencias.daltonismo);
+    const body=document.body;
+    body.classList.toggle('text-large',preferencias.texto==='grande');
+    body.classList.toggle('text-xlarge',preferencias.texto==='muy-grande');
+    body.classList.toggle('high-contrast',preferencias.contraste!=='normal');
+    ['negro','verde','rojo','azul','blanco'].forEach(theme=>body.classList.toggle('theme-'+theme,preferencias.contraste===theme));
+    body.classList.toggle('colorblind-safe',preferencias.daltonismo!=='ninguno');
+    ['protanopia','deuteranopia','tritanopia'].forEach(mode=>body.classList.toggle('colorblind-'+mode,preferencias.daltonismo===mode));
+    $('#opcion-texto').value=preferencias.texto;
+    $('#opcion-contraste').value=preferencias.contraste;
+    $('#opcion-daltonismo').value=preferencias.daltonismo;
     $('#opcion-voz').checked=Boolean(preferencias.voz);
   }
-  [['#opcion-texto','texto'],['#opcion-contraste','contraste'],['#opcion-daltonismo','daltonismo'],['#opcion-voz','voz']].forEach(([selector,clave])=>{
+  [['#opcion-texto','texto'],['#opcion-contraste','contraste'],['#opcion-daltonismo','daltonismo']].forEach(([selector,clave])=>{
     $(selector).addEventListener('change',event=>{
-      preferencias[clave]=event.target.checked;
+      preferencias[clave]=event.target.value;
       storageWrite(PREF_KEY,preferencias);
       aplicarPreferencias();
-      if(clave==='voz'&&preferencias.voz) aviso('Confirmaciones habladas activadas.');
-      else if(clave==='contraste') hablar(preferencias.contraste?'Modo de alto contraste activado.':'Modo de alto contraste desactivado.');
-      else if(clave==='daltonismo') hablar(preferencias.daltonismo?'Paleta apta para daltonismo activada.':'Paleta apta para daltonismo desactivada.');
+      const mensajes={
+        texto:'Tamaño de texto actualizado.',
+        contraste:'Tema de color y contraste actualizado.',
+        daltonismo:'Adaptación de colores actualizada.'
+      };
+      hablar(mensajes[clave]);
     });
+  });
+  $('#opcion-voz').addEventListener('change',event=>{
+    preferencias.voz=event.target.checked;
+    storageWrite(PREF_KEY,preferencias);
+    aplicarPreferencias();
+    if(preferencias.voz) aviso('Asistente virtual activado. A partir de ahora anunciaré las pestañas y las acciones que realices.');
+    else aviso('Asistente virtual desactivado.');
   });
   $('#probar-voz').addEventListener('click',()=>{
     if(!('speechSynthesis' in window)){aviso('Este navegador no ofrece síntesis de voz.');return;}
-    if(!preferencias.voz){aviso('Activa la opción «Confirmaciones habladas» para probarla.');return;}
-    aviso('Bienvenido a MediCuida. Esta es una demostración de lectura accesible.');
+    if(!preferencias.voz){aviso('Activa el asistente virtual para probarlo.');return;}
+    aviso('Asistente virtual activo. Puedo anunciar las pestañas y describir las acciones disponibles.');
   });
+  // Los filtros y el inventario siguen usando cantidades de ejemplo; esta vista previa
+  // informa el estado que quedará guardado cuando se registre o edite un medicamento.
+  actualizarVistaPreviaStock();
+
   $('#borrar-datos').addEventListener('click',()=>{
     if(!window.confirm('¿Borrar todos los tratamientos y el historial de esta demostración?'))return;
     tratamientos=[];storageWrite(TREAT_KEY,tratamientos);aviso('Datos de demostración restablecidos.');

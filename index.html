@@ -69,6 +69,8 @@
             <input id="reg-dni" name="dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="8 dígitos" required />
             <label for="reg-email">Correo electrónico</label>
             <input id="reg-email" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="email" required />
+            <label for="reg-telefono">Celular de contacto</label>
+            <input id="reg-telefono" name="telefono" type="tel" inputmode="tel" pattern="[0-9+() -]{9,16}" maxlength="16" placeholder="Ej.: 987 654 321" autocomplete="tel" required />
             <div id="reg-campos-cuidador" class="role-extra" hidden>
               <h3>Datos de supervisión</h3>
               <label for="reg-dni-paciente">DNI del paciente que cuidarás</label>
@@ -108,6 +110,7 @@
           <button type="button" data-view="tratamientos" class="nav-link">Mis medicamentos</button>
           <button type="button" data-view="historial" class="nav-link">Historial</button>
           <button type="button" data-view="ayuda" class="nav-link">Ayuda</button>
+          <button type="button" data-view="blog" class="nav-link">Blog</button>
           <button type="button" data-view="perfil" class="nav-link">Accesibilidad</button>
         </nav>
         <div class="user-actions"><span class="user-chip">◉ <span id="usuario-chip">Usuario</span></span><button id="cerrar-sesion" type="button" class="btn btn-outline btn-sm">Salir</button></div>
@@ -157,6 +160,12 @@
             <div class="field"><label for="estado-consulta">Estado del stock</label><select id="estado-consulta"><option value="">Todos los estados</option><option value="disponible">Disponible (más de 10)</option><option value="critico">Stock crítico (1 a 10)</option><option value="agotado">Sin stock (0)</option></select></div>
             <button class="btn btn-primary align-end" type="submit">Buscar</button>
           </form>
+          <div class="notice observatory-callout">
+            <strong>Fuente oficial del MINSA · SISMED</strong>
+            <p>Contrasta la información del prototipo con el Observatorio de disponibilidad de medicamentos del Ministerio de Salud. Los datos de MediCuida son simulados y no se conectan automáticamente con SISMED.</p>
+            <a class="btn btn-soft btn-sm" href="https://appsalud.minsa.gob.pe/portal_sismed/" target="_blank" rel="noopener noreferrer">Abrir Observatorio de disponibilidad ↗</a>
+            <a class="text-link" href="https://www.digemid.minsa.gob.pe/webDigemid/acceso-y-uso/" target="_blank" rel="noopener noreferrer">Ver portal oficial de DIGEMID</a>
+          </div>
           <div class="result-heading"><div><h2>Resultados de la consulta</h2><p id="total-resultados" aria-live="polite">Cargando registros…</p></div><button class="btn btn-soft btn-sm" type="button" id="limpiar-consulta">Limpiar filtros</button></div>
           <div id="resultados-stock" class="result-grid" aria-live="polite"></div>
           <p class="subtle-note">Los registros y las cantidades se crearon exclusivamente para mostrar el funcionamiento del prototipo. Verifica la disponibilidad real con el establecimiento de salud.</p>
@@ -165,21 +174,44 @@
 
       <!-- DASHBOARD -->
       <section class="view" id="vista-dashboard" aria-labelledby="dashboard-titulo" hidden>
-        <div class="page-top container"><span class="eyebrow">PANEL DE CONTROL</span><h1 id="dashboard-titulo">Dashboard de disponibilidad</h1><p>Explora indicadores y gráficos calculados sobre un inventario académico ficticio.</p></div>
+        <div class="page-top container"><span class="eyebrow">PANEL DE CONTROL · ADMINISTRACIÓN</span><h1 id="dashboard-titulo">Dashboard de gestión</h1><p>Resumen del inventario, actividad de usuarios, visitas por sección y registros realizados por los médicos.</p></div>
         <div class="container page-body">
           <div class="filter-panel dashboard-filters"><div class="field"><label for="categoria-dashboard">Filtrar por categoría</label><select id="categoria-dashboard"><option value="">Todas las categorías</option></select></div><div class="field"><label for="establecimiento-dashboard">Filtrar por establecimiento</label><select id="establecimiento-dashboard"><option value="">Todos los establecimientos</option></select></div><button class="btn btn-soft align-end" id="reiniciar-dashboard" type="button">Restablecer filtros</button></div>
-          <div class="metric-grid" aria-live="polite">
-            <article class="metric-card"><div class="metric-icon ic-blue">▤</div><p>Medicamentos registrados</p><strong id="metric-total">0</strong><small>Registros de la selección</small></article>
-            <article class="metric-card"><div class="metric-icon ic-green">✓</div><p>Medicamentos disponibles</p><strong id="metric-disponibles">0</strong><small>Incluye stock crítico (&gt; 0)</small></article>
-            <article class="metric-card"><div class="metric-icon ic-orange">!</div><p>Medicamentos con stock crítico</p><strong id="metric-criticos">0</strong><small>De 1 a 10 unidades de ejemplo</small></article>
-            <article class="metric-card"><div class="metric-icon ic-purple">%</div><p>Porcentaje de disponibilidad</p><strong id="metric-porcentaje">0%</strong><small>Con stock / registros totales</small></article>
-          </div>
-          <div class="chart-grid">
-            <article class="chart-card"><div class="chart-heading"><h2>Medicamentos por categoría</h2><p>Cantidad de registros del filtro actual</p></div><div id="grafico-categorias" class="bar-chart" role="img" aria-label="Gráfico de barras de medicamentos por categoría"></div></article>
-            <article class="chart-card"><div class="chart-heading"><h2>Distribución por disponibilidad</h2><p>Disponible, stock crítico o sin stock</p></div><div class="donut-layout"><div id="grafico-dona" class="donut" role="img" aria-label="Gráfico circular de distribución de disponibilidad"><div class="donut-hole"><strong id="total-dona">0</strong><small>registros</small></div></div><div id="leyenda-dona" class="donut-legend"></div></div></article>
-            <article class="chart-card chart-wide"><div class="chart-heading"><h2>Evolución de existencias</h2><p>Serie ilustrativa de los últimos seis períodos; no representa un histórico real</p></div><div class="line-chart-wrap"><svg id="grafico-evolucion" class="line-chart" viewBox="0 0 760 260" role="img" aria-label="Evolución ficticia de existencias en seis períodos" preserveAspectRatio="xMidYMid meet"></svg></div><div id="resumen-evolucion" class="chart-foot" aria-live="polite"></div></article>
-          </div>
-          <p class="subtle-note">Estados definidos para esta demo: disponible si hay más de 10 unidades, crítico entre 1 y 10, sin stock si hay 0. No usar estos umbrales para decisiones de abastecimiento reales.</p>
+          <section class="dashboard-section" aria-labelledby="dashboard-stock-title">
+            <div class="section-head"><div><span class="eyebrow">INVENTARIO</span><h2 id="dashboard-stock-title">Estado de los medicamentos</h2></div><p>Los registros se separan según la cantidad de stock disponible.</p></div>
+            <div class="metric-grid dashboard-stock-grid" aria-live="polite">
+              <article class="metric-card"><div class="metric-icon ic-blue">▤</div><p>Medicamentos registrados</p><strong id="metric-total">0</strong><small>Registros del filtro actual</small></article>
+              <article class="metric-card"><div class="metric-icon ic-green">✓</div><p>Disponibles</p><strong id="metric-disponibles">0</strong><small>Más de 10 unidades</small></article>
+              <article class="metric-card"><div class="metric-icon ic-orange">!</div><p>Stock crítico</p><strong id="metric-criticos">0</strong><small>De 1 a 10 unidades</small></article>
+              <article class="metric-card"><div class="metric-icon ic-red">×</div><p>Sin stock</p><strong id="metric-agotados">0</strong><small>0 unidades registradas</small></article>
+              <article class="metric-card"><div class="metric-icon ic-purple">%</div><p>Disponibilidad</p><strong id="metric-porcentaje">0%</strong><small>Con stock / total</small></article>
+              <article class="metric-card"><div class="metric-icon ic-blue">▥</div><p>Unidades en inventario</p><strong id="metric-unidades">0</strong><small>Suma del stock registrado</small></article>
+            </div>
+            <div class="chart-grid">
+              <article class="chart-card"><div class="chart-heading"><h2>Medicamentos por categoría</h2><p>Cantidad de registros del filtro actual</p></div><div id="grafico-categorias" class="bar-chart" role="img" aria-label="Gráfico de barras de medicamentos por categoría"></div></article>
+              <article class="chart-card"><div class="chart-heading"><h2>Distribución por disponibilidad</h2><p>Disponible, stock crítico o sin stock</p></div><div class="donut-layout"><div id="grafico-dona" class="donut" role="img" aria-label="Gráfico circular de distribución de disponibilidad"><div class="donut-hole"><strong id="total-dona">0</strong><small>registros</small></div></div><div id="leyenda-dona" class="donut-legend"></div></div></article>
+              <article class="chart-card chart-wide"><div class="chart-heading"><h2>Evolución de existencias</h2><p>Serie ilustrativa de los últimos seis períodos; no representa un histórico real</p></div><div class="line-chart-wrap"><svg id="grafico-evolucion" class="line-chart" viewBox="0 0 760 260" role="img" aria-label="Evolución ficticia de existencias en seis períodos" preserveAspectRatio="xMidYMid meet"></svg></div><div id="resumen-evolucion" class="chart-foot" aria-live="polite"></div></article>
+            </div>
+          </section>
+          <section class="dashboard-section" aria-labelledby="dashboard-users-title">
+            <div class="section-head"><div><span class="eyebrow">COMUNIDAD</span><h2 id="dashboard-users-title">Usuarios registrados</h2></div><p>Los médicos también cuentan como usuarios con funciones de paciente y cuidador.</p></div>
+            <div class="metric-grid dashboard-user-grid">
+              <article class="metric-card"><p>Total de cuentas</p><strong id="metric-usuarios-total">0</strong><small>Usuarios registrados</small></article>
+              <article class="metric-card"><p>Pacientes</p><strong id="metric-usuarios-pacientes">0</strong><small>Incluye médicos y rol combinado</small></article>
+              <article class="metric-card"><p>Cuidadores</p><strong id="metric-usuarios-cuidadores">0</strong><small>Incluye médicos y rol combinado</small></article>
+              <article class="metric-card"><p>Médicos</p><strong id="metric-usuarios-medicos">0</strong><small>Cuentas con rol médico</small></article>
+              <article class="metric-card"><p>Médicos con registros</p><strong id="metric-medicos-activos">0</strong><small>Han registrado tratamientos</small></article>
+              <article class="metric-card"><p>Medicamentos asignados</p><strong id="metric-registros-asignados">0</strong><small>Registros hechos para pacientes</small></article>
+            </div>
+          </section>
+          <section class="dashboard-section">
+            <div class="dashboard-analytics-grid">
+              <article class="chart-card"><div class="chart-heading"><h2>Visitas por pestaña</h2><p>Entradas registradas por sección y usuarios distintos</p></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Pestaña</th><th>Visitas</th><th>Usuarios</th></tr></thead><tbody id="tabla-visitas-dashboard"><tr><td colspan="3">Cargando actividad…</td></tr></tbody></table></div></article>
+              <article class="chart-card"><div class="chart-heading"><h2>Actividad de los médicos</h2><p>Registros de medicamentos propios y asignados a pacientes</p></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Médico</th><th>Registros</th><th>Asignados</th><th>Pacientes</th><th>Modificaciones</th></tr></thead><tbody id="tabla-medicos-dashboard"><tr><td colspan="5">Cargando actividad…</td></tr></tbody></table></div></article>
+            </div>
+          </section>
+          <div class="notice observatory-callout"><strong>Observatorio oficial de disponibilidad · MINSA / SISMED</strong><p>Consulta la fuente institucional para contrastar la disponibilidad publicada por el sistema de salud.</p><a class="btn btn-soft btn-sm" href="https://appsalud.minsa.gob.pe/portal_sismed/" target="_blank" rel="noopener noreferrer">Abrir Observatorio SISMED ↗</a></div>
+          <p class="subtle-note">MediCuida es una demostración académica. Los medicamentos y sus cantidades son simulados; las visitas y estadísticas corresponden a la actividad registrada dentro de esta aplicación.</p>
         </div>
       </section>
 
@@ -196,7 +228,7 @@
                 <div class="field"><label for="med-nombre">Nombre del medicamento *</label><input id="med-nombre" name="nombre" type="text" required minlength="2" maxlength="90" placeholder="Ej.: Paracetamol 500 mg" /></div>
                 <div class="field"><label for="med-categoria">Categoría *</label><input id="med-categoria" name="categoria" list="lista-categorias" required minlength="2" maxlength="65" placeholder="Ej.: Analgésicos" /><datalist id="lista-categorias"></datalist></div>
                 <div class="field"><label for="med-establecimiento">Establecimiento *</label><input id="med-establecimiento" name="establecimiento" list="lista-establecimientos" required minlength="2" maxlength="110" placeholder="Ej.: Centro de Salud San Borja" /><datalist id="lista-establecimientos"></datalist></div>
-                <div class="field"><label for="med-stock">Unidades en stock *</label><input id="med-stock" name="stock" type="number" min="0" max="1000000" step="1" required placeholder="Ej.: 25" /></div>
+                <div class="field"><label for="med-stock">Unidades en stock *</label><input id="med-stock" name="stock" type="number" min="0" max="1000000" step="1" required placeholder="Ej.: 25" /><small id="med-stock-preview" class="field-help">El estado del inventario aparecerá al introducir la cantidad.</small></div>
                 <div class="inventory-form-actions"><button id="med-guardar" class="btn btn-primary" type="submit">Agregar medicamento</button><button id="med-cancelar" class="btn btn-soft" type="button" hidden>Cancelar edición</button></div>
                 <p id="med-feedback" class="form-feedback" role="status" aria-live="polite"></p>
               </form>
@@ -221,6 +253,7 @@
           <div class="two-column">
             <article class="content-card"><h2>Registrar un medicamento</h2><p>Introduce únicamente información de ejemplo, no tratamientos reales.</p>
               <form id="form-tratamiento" class="vertical-form">
+                <p id="trat-stock-context" class="notice stock-reference" hidden></p>
                 <div class="field"><label for="trat-nombre">Nombre del medicamento *</label><input id="trat-nombre" name="nombre" required maxlength="65" placeholder="Ej.: Medicamento de prueba" /></div>
                 <div class="form-row"><div class="field"><label for="trat-forma">Forma farmacéutica *</label><select id="trat-forma" name="forma" required><option value="">Seleccionar</option><option>Tableta</option><option>Cápsula</option><option>Jarabe</option><option>Gotas</option><option>Otro</option></select></div><div class="field"><label for="trat-dosis">Dosis indicada (texto) *</label><input id="trat-dosis" name="dosis" maxlength="50" placeholder="Dato de ejemplo" required /></div></div>
                 <div class="form-row"><div class="field"><label for="trat-inicio">Fecha de inicio *</label><input id="trat-inicio" type="date" name="inicio" required /></div><div class="field"><label for="trat-fin">Fecha de fin *</label><input id="trat-fin" type="date" name="fin" required /></div></div>
@@ -254,6 +287,11 @@
              <h2>Notificaciones sobre mis medicamentos</h2>
              <p>Los cambios que realice un médico en tus tratamientos ficticios aparecerán aquí.</p>
              <div id="lista-avisos" aria-live="polite"></div>
+           </div>
+           <div id="trat-contacto-persona" class="content-card contact-panel" hidden>
+             <h2>Contacto de la persona</h2>
+             <p><strong id="trat-contacto-nombre">-</strong> · Celular: <span id="trat-contacto-numero">No registrado</span></p>
+             <div id="trat-contacto-acciones" class="contact-actions"></div>
            </div>
            <p id="trat-vista-persona" class="field-help">Visualizando mis propios registros.</p>
            <button type="button" id="trat-volver-mios" class="btn btn-soft btn-sm" hidden>Ver mis medicamentos</button>
@@ -306,22 +344,45 @@
       </section>
 
       <!-- PERFIL Y ACCESIBILIDAD -->
+      <section class="view" id="vista-blog" aria-labelledby="blog-titulo" hidden>
+        <div class="page-top container"><span class="eyebrow">BLOG MEDICUIDA</span><h1 id="blog-titulo">Novedades y orientación</h1><p>Información para aprovechar las herramientas del prototipo y consultar fuentes públicas de medicamentos.</p></div>
+        <div class="container page-body">
+          <div class="blog-grid">
+            <article class="content-card blog-card"><span class="eyebrow">DISPONIBILIDAD</span><h2>Consulta antes de desplazarte</h2><p>Utiliza los filtros de nombre, categoría, establecimiento y estado para localizar registros de ejemplo. Confirma siempre el stock real directamente con el establecimiento.</p><button type="button" class="btn btn-soft" data-view="consulta">Ir a Disponibilidad</button></article>
+            <article class="content-card blog-card"><span class="eyebrow">SEGUIMIENTO</span><h2>Organiza tus tratamientos</h2><p>En «Mis medicamentos» puedes registrar datos ficticios, revisar las tomas y consultar avisos cuando un médico modifica un registro asignado.</p><button type="button" class="btn btn-soft" data-view="tratamientos">Ir a Mis medicamentos</button></article>
+            <article class="content-card blog-card"><span class="eyebrow">ACCESIBILIDAD</span><h2>Adapta la interfaz a tu lectura</h2><p>Configura el tamaño del texto, el contraste, una paleta compatible con distintos tipos de daltonismo y el asistente de voz.</p><button type="button" class="btn btn-soft" data-view="perfil">Personalizar accesibilidad</button></article>
+          </div>
+          <div class="notice observatory-callout"><strong>Recurso público del Ministerio de Salud</strong><p>El SISMED dispone de un Observatorio de disponibilidad para consultar información institucional. Este enlace abre el portal externo; MediCuida no descarga ni importa sus datos.</p><a class="btn btn-primary" href="https://appsalud.minsa.gob.pe/portal_sismed/" target="_blank" rel="noopener noreferrer">Acceder al Observatorio de disponibilidad ↗</a><a class="text-link" href="https://www.digemid.minsa.gob.pe/webDigemid/acceso-y-uso/" target="_blank" rel="noopener noreferrer">Portal DIGEMID · Acceso y uso</a></div>
+        </div>
+      </section>
       <section class="view" id="vista-perfil" aria-labelledby="perfil-titulo" hidden>
-        <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Personaliza la presentación del sistema, revisa tu perfil y gestiona tus roles de demostración.</p></div>
-        <div class="container page-body"><div class="two-column"><article class="content-card"><h2>Preferencias de lectura</h2><label class="toggle-option"><input id="opcion-texto" type="checkbox" /><span><strong>Texto ampliado</strong><small>Aumenta el tamaño de lectura.</small></span></label><label class="toggle-option"><input id="opcion-contraste" type="checkbox" /><span><strong>Alto contraste</strong><small>Mejora la lectura con textos y bordes más marcados.</small></span></label><label class="toggle-option"><input id="opcion-daltonismo" type="checkbox" /><span><strong>Colores aptos para daltonismo</strong><small>Usa tonos más fáciles de distinguir y símbolos junto a los estados.</small></span></label><label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Confirmaciones habladas</strong><small>Lee en voz alta acciones como guardar, editar, eliminar, filtrar y navegar.</small></span></label><button type="button" id="probar-voz" class="btn btn-soft">Probar confirmaciones habladas</button></article><article class="content-card"><h2>Mi cuenta</h2><p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div><div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div><div class="notice">Los roles se validan en el servidor. En esta práctica, Médico incluye también las funciones de Paciente y Cuidador, sin verificación profesional real.</div>
-          <div class="separator"></div>
-          <form id="form-cambiar-rol" class="vertical-form">
-            <h3>Modificar mis roles</h3>
-            <label for="perfil-cambiar-rol">Selecciona tu rol</label>
-            <select id="perfil-cambiar-rol">
-              <option value="paciente">Paciente</option><option value="cuidador">Cuidador</option>
-              <option value="ambos">Paciente y Cuidador</option><option value="medico">Médico</option>
-            </select>
-            <div id="perfil-vinculo-box" hidden><label for="perfil-vinculo-dni">DNI del paciente vinculado (opcional)</label><input id="perfil-vinculo-dni" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" placeholder="DNI ficticio de 8 dígitos" /><p class="field-help">El vínculo de prueba se declara en el perfil; no equivale a una autorización real del paciente.</p></div>
-            <div id="perfil-rol-clave-box" hidden><label for="perfil-rol-clave">Contraseña para dejar el rol Médico</label><input id="perfil-rol-clave" type="password" autocomplete="current-password" placeholder="Tu contraseña actual" /><p class="field-help">Si abandonas el rol Médico, perderás sus permisos y no podrás recuperarlos desde este formulario.</p></div>
-            <button type="submit" class="btn btn-primary">Guardar cambio de rol</button>
-            <p id="perfil-rol-feedback" class="form-feedback" role="status" aria-live="polite"></p>
-          </form><div class="separator"></div><h3>Datos guardados</h3><p>Elimina los registros locales de las versiones anteriores. Los tratamientos nuevos se almacenan en el servidor.</p><button type="button" id="borrar-datos" class="btn btn-danger">Borrar registros locales antiguos</button></article></div></div>
+        <div class="page-top container"><span class="eyebrow">UNA INTERFAZ PARA TODOS</span><h1 id="perfil-titulo">Perfil y accesibilidad</h1><p>Adapta la lectura, el contraste, los colores y la asistencia por voz. También puedes actualizar tus datos de contacto.</p></div>
+        <div class="container page-body"><div class="two-column">
+          <article class="content-card"><h2>Preferencias de accesibilidad</h2>
+            <div class="field"><label for="opcion-texto">Tamaño del texto</label><select id="opcion-texto"><option value="mediano">Mediano</option><option value="grande">Grande</option><option value="muy-grande">Muy grande</option></select><small class="field-help">Elige el tamaño de lectura que te resulte más cómodo.</small></div>
+            <div class="field"><label for="opcion-contraste">Color de interfaz y alto contraste</label><select id="opcion-contraste"><option value="normal">Predeterminado</option><option value="negro">Negro</option><option value="verde">Verde</option><option value="rojo">Rojo</option><option value="azul">Azul</option><option value="blanco">Blanco</option></select><small class="field-help">La interfaz ajustará automáticamente el color del texto, los fondos, los bordes y los botones para mantener la legibilidad.</small></div>
+            <div class="field"><label for="opcion-daltonismo">Adaptación para daltonismo</label><select id="opcion-daltonismo"><option value="ninguno">Sin adaptación</option><option value="protanopia">Protanopia</option><option value="deuteranopia">Deuteranopia</option><option value="tritanopia">Tritanopia</option></select><small class="field-help">Los estados también se identifican con palabras y símbolos, no únicamente por color.</small></div>
+            <label class="toggle-option"><input id="opcion-voz" type="checkbox" /><span><strong>Asistente virtual por voz</strong><small>Anuncia las pestañas, explica qué puedes hacer y confirma las acciones realizadas.</small></span></label>
+            <button type="button" id="probar-voz" class="btn btn-soft">Probar asistente virtual</button>
+          </article>
+          <article class="content-card"><h2>Mi cuenta</h2>
+            <p><strong>Nombres:</strong> <span id="perfil-nombres">-</span></p><p><strong>Apellidos:</strong> <span id="perfil-apellidos">-</span></p><p><strong>DNI:</strong> <span id="perfil-dni">-</span></p><p><strong>Correo:</strong> <span id="perfil-correo">-</span></p><p><strong>Rol:</strong> <span id="perfil-rol">-</span></p><p><strong>Celular:</strong> <span id="perfil-telefono-texto">No registrado</span></p>
+            <div id="perfil-cuidador" hidden><p><strong>DNI del paciente:</strong> <span id="perfil-dni-paciente">-</span></p></div>
+            <div id="perfil-medico" hidden><p><strong>RUC del establecimiento:</strong> <span id="perfil-ruc">-</span></p><p><strong>Puesto:</strong> <span id="perfil-puesto">-</span></p></div>
+            <div class="notice">Los médicos pueden ejercer también funciones de paciente y cuidador. El rol profesional es declarado para esta práctica y no está verificado por el MINSA.</div>
+            <div class="separator"></div>
+            <form id="form-contacto" class="vertical-form"><h3>Medio de comunicación</h3><div class="field"><label for="perfil-telefono">Número de celular</label><input id="perfil-telefono" type="tel" inputmode="tel" pattern="[0-9+() -]{9,16}" maxlength="16" placeholder="Ej.: 987 654 321" required /></div><p class="field-help">Este número podrá mostrarse a las personas con las que compartas registros de demostración.</p><button type="submit" class="btn btn-soft">Guardar número de contacto</button><p id="perfil-contacto-feedback" class="form-feedback" role="status" aria-live="polite"></p></form>
+            <div class="separator"></div>
+            <form id="form-cambiar-rol" class="vertical-form">
+              <h3>Modificar mis roles</h3><label for="perfil-cambiar-rol">Selecciona tu rol</label>
+              <select id="perfil-cambiar-rol"><option value="paciente">Paciente</option><option value="cuidador">Cuidador</option><option value="ambos">Paciente y Cuidador</option><option value="medico">Médico</option></select>
+              <div id="perfil-vinculo-box" hidden><label for="perfil-vinculo-dni">DNI del paciente vinculado (opcional)</label><input id="perfil-vinculo-dni" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" placeholder="DNI ficticio de 8 dígitos" /><p class="field-help">El vínculo de prueba se declara en el perfil; no equivale a una autorización real del paciente.</p></div>
+              <div id="perfil-rol-clave-box" hidden><label for="perfil-rol-clave">Contraseña para dejar el rol Médico</label><input id="perfil-rol-clave" type="password" autocomplete="current-password" placeholder="Tu contraseña actual" /><p class="field-help">Si abandonas el rol Médico, perderás sus permisos y no podrás recuperarlos desde este formulario.</p></div>
+              <button type="submit" class="btn btn-primary">Guardar cambio de rol</button><p id="perfil-rol-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+            </form>
+            <div class="separator"></div><h3>Datos guardados</h3><p>Elimina los registros locales de las versiones anteriores. Los tratamientos nuevos se almacenan en el servidor.</p><button type="button" id="borrar-datos" class="btn btn-danger">Borrar registros locales antiguos</button>
+          </article>
+        </div></div>
       </section>
     </main>
     <footer class="footer"><div class="container footer-inner"><div><strong>+ MediCuida</strong><p>Grupo 1 · Sistema Inclusivo de Gestión de Medicamentos</p></div><p>Tu bienestar, nuestra prioridad.</p></div></footer>

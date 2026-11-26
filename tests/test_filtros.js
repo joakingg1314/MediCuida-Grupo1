@@ -50,7 +50,7 @@ assert.equal(cumpleFiltroStock(records[0],""),true);
 assert.equal(cumpleFiltroStock(records[0],"agotado"),true);
 assert.equal(cumpleFiltroStock(records[0],"disponible"),false);
 
-for (const id of ["estado-consulta","estado-inventario","buscar-inventario","limpiar-inventario","opcion-daltonismo"]) {
+for (const id of ["estado-consulta","estado-inventario","buscar-inventario","limpiar-inventario","opcion-daltonismo","opcion-texto","opcion-contraste","opcion-voz","reg-telefono","perfil-telefono","form-contacto","tabla-visitas-dashboard","tabla-medicos-dashboard","trat-contacto-persona"]) {
   assert.ok(html.includes('id="'+id+'"'),"Falta el control "+id);
 }
 for (const value of ["disponible","critico","agotado"]) {
@@ -60,5 +60,10 @@ assert.ok(js.includes("hablar(texto)"),"Las notificaciones deben activar las con
 assert.ok(js.includes("colorblind-safe"),"Falta activar la paleta apta para daltonismo");
 assert.ok(css.includes("body.high-contrast"),"Faltan estilos de alto contraste");
 assert.ok(css.includes("body.colorblind-safe"),"Faltan estilos para daltonismo");
+assert.ok(css.includes("body.theme-negro") && css.includes("body.theme-verde") && css.includes("body.theme-rojo") && css.includes("body.theme-azul") && css.includes("body.theme-blanco"),"Faltan temas de alto contraste");
+assert.ok(html.includes('data-view="blog"'),"Falta la pestaña Blog");
+assert.ok(html.includes("appsalud.minsa.gob.pe/portal_sismed/"),"Falta el enlace al Observatorio SISMED");
+assert.ok(js.includes("Asistente virtual activado"),"Falta el anuncio inicial del asistente virtual");
+assert.ok(js.includes("/api/visitas"),"Falta el registro de visitas por pestaña");
 
 console.log("✓ Filtros de stock, accesibilidad visual y confirmaciones habladas verificados");

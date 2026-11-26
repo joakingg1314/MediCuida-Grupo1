@@ -39,3 +39,12 @@ El archivo `render.yaml` incluye la configuración necesaria. El servidor usa `P
 **Vencimiento:** la instancia gratuita de PostgreSQL utilizada aquí vence el **14 de diciembre de 2026**. Antes de entonces debe migrarse, renovarse o cambiar de plan para evitar perder los registros. Usar solo datos ficticios.
 
 Los tests automatizados están en `tests/test_seguimiento.py` y su flujo de GitHub Actions en `.github/workflows/verificar.yml`.
+
+
+## Funciones añadidas
+
+- Asignación de tratamientos de demostración por parte del médico desde la consulta de disponibilidad, con aviso al paciente y datos de contacto.
+- Dashboard con conteo de cuentas, visitas por pestaña y estadísticas de registros médicos.
+- Perfil con celular de contacto editable, tamaño de texto mediano/grande/muy grande, temas de contraste y adaptación por tipo de daltonismo.
+- Asistente virtual por voz que describe cada pestaña y confirma acciones.
+- Blog de orientación y acceso al Observatorio de disponibilidad del SISMED (MINSA). Los enlaces oficiales son externos; el inventario del prototipo sigue siendo simulado.
