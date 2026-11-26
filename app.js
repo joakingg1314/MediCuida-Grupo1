@@ -722,7 +722,7 @@
   const tratarValor = id => $(id).value.trim();
 
   function agregarAccesosContacto(destino, telefono) {
-    const digits = String(telefono || '').replace(/\\D/g,'').replace(/^51/,'');
+    const digits = String(telefono || '').replace(/\D/g,'').replace(/^51/,'');
     if (!/^9[0-9]{8}$/.test(digits)) return false;
     const llamar = create('a','btn btn-soft btn-sm','Llamar');
     llamar.href = 'tel:+51'+digits;

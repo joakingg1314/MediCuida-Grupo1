@@ -107,7 +107,7 @@ def clean(value, field, minimum=2, maximum=90):
 def validate_phone(value):
     if not isinstance(value, str):
         raise ValueError("Ingresa un número de celular de contacto.")
-    digits = re.sub(r"\\D", "", value)
+    digits = re.sub(r"\D", "", value)
     if len(digits) == 11 and digits.startswith("51"):
         digits = digits[2:]
     if not re.fullmatch(r"9[0-9]{8}", digits):
