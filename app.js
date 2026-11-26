@@ -308,7 +308,7 @@
     if (!preferencias.voz) return;
     const control = event.target.closest('button, a');
     if (!control || control.disabled || control.hasAttribute('data-view')) return;
-    const accion = (control.getAttribute('aria-label') || control.textContent || '').trim().replace(/\\s+/g,' ');
+    const accion = (control.getAttribute('aria-label') || control.textContent || '').trim().replace(/\s+/g,' ');
     if (accion) hablar('Acción seleccionada: '+accion+'.');
   }, true);
 
