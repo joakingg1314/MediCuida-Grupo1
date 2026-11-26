@@ -1635,3 +1635,8 @@ body.colorblind-tritanopia .status-badge.unavailable { background:#f8e8ef; color
 @media(max-width:600px) {
   .dashboard-stock-grid,.dashboard-user-grid { grid-template-columns:1fr; }
 }
+
+body.theme-negro .btn-soft,body.theme-negro .btn-outline,body.theme-verde .btn-soft,body.theme-verde .btn-outline,body.theme-rojo .btn-soft,body.theme-rojo .btn-outline,body.theme-azul .btn-soft,body.theme-azul .btn-outline {
+  color:var(--ink); background:var(--surface); border:2px solid var(--blue-dark);
+}
+body.theme-blanco .btn-soft,body.theme-blanco .btn-outline { color:#00336b; background:#fff; border:2px solid #00336b; }

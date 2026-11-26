@@ -304,6 +304,13 @@
     if (!button) return;
     mostrarVista(button.dataset.view);
   });
+  document.addEventListener('click', event => {
+    if (!preferencias.voz) return;
+    const control = event.target.closest('button, a');
+    if (!control || control.disabled || control.hasAttribute('data-view')) return;
+    const accion = (control.getAttribute('aria-label') || control.textContent || '').trim().replace(/\\s+/g,' ');
+    if (accion) hablar('Acción seleccionada: '+accion+'.');
+  }, true);
 
   // ------------------------ INVENTARIO FICTICIO ------------------------
   function determinarEstado(stock) {
@@ -409,6 +416,8 @@
     $('#trat-dosis').value = '';
     $('#trat-forma').value = '';
     $('#trat-dni-paciente').value = '';
+    dniVistaTratamientos = '';
+    $('#trat-volver-mios').hidden = true;
     $('#trat-medico-nombre').value = nombreCompleto();
     $('#trat-motivo').value = '';
     $('#trat-indicaciones').value = '';
@@ -1000,6 +1009,7 @@
     $('#edit-trat-razon').value='';
     $('#edit-trat-feedback').textContent='';
     $('#dialog-edicion-trat').showModal();
+    hablar('Formulario de modificación abierto. Revisa los datos y explica el motivo del cambio para notificar al paciente.');
   }
   $('#cancelar-edicion-trat').addEventListener('click',()=>$('#dialog-edicion-trat').close());
   $('#form-editar-trat').addEventListener('submit',async event=>{

@@ -235,22 +235,27 @@ class Handler(BaseHTTPRequestHandler):
                     FROM visitas_pestanas GROUP BY vista ORDER BY visitas DESC, vista
                 """).fetchall()]
                 actividad_medicos = [dict(r) for r in c.execute("""
-                    SELECT t.autor_dni AS dni,
-                        COALESCE(NULLIF(MAX(t.medico_nombre),''), MAX(COALESCE(u.nombres,'') || ' ' || COALESCE(u.apellidos,'')), 'Médico') AS nombre,
-                        COUNT(*) AS registros,
-                        SUM(CASE WHEN t.titular_dni <> t.autor_dni THEN 1 ELSE 0 END) AS asignados,
-                        COUNT(DISTINCT CASE WHEN t.titular_dni <> t.autor_dni THEN t.titular_dni END) AS pacientes,
-                        (SELECT COUNT(*) FROM avisos a WHERE a.medico_dni=t.autor_dni) AS modificaciones
-                    FROM tratamientos t
-                    LEFT JOIN usuarios u ON u.dni=t.autor_dni
-                    WHERE t.medico_nombre <> ''
-                    GROUP BY t.autor_dni ORDER BY registros DESC
+                    SELECT u.dni,
+                        COALESCE(
+                            (SELECT MAX(t.medico_nombre) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''),
+                            TRIM(COALESCE(u.nombres,'') || ' ' || COALESCE(u.apellidos,'')),
+                            'Médico'
+                        ) AS nombre,
+                        (SELECT COUNT(*) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '') AS registros,
+                        (SELECT COUNT(*) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni) AS asignados,
+                        (SELECT COUNT(DISTINCT t.titular_dni) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni) AS pacientes,
+                        (SELECT COUNT(*) FROM avisos a WHERE a.medico_dni=u.dni) AS modificaciones
+                    FROM usuarios u
+                    WHERE u.rol='medico'
+                       OR EXISTS (SELECT 1 FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '')
+                       OR EXISTS (SELECT 1 FROM avisos a WHERE a.medico_dni=u.dni)
+                    ORDER BY registros DESC, nombre
                 """).fetchall()]
             return self.json_out(200, {
                 "usuarios": {"total": total_usuarios, "pacientes": pacientes, "cuidadores": cuidadores, "medicos": medicos},
                 "visitas": visitas,
                 "medicos": {
-                    "con_registros": len(actividad_medicos),
+                    "con_registros": sum(1 for r in actividad_medicos if int(r["registros"] or 0) > 0),
                     "registros": sum(int(r["registros"] or 0) for r in actividad_medicos),
                     "asignados": sum(int(r["asignados"] or 0) for r in actividad_medicos),
                     "pacientes": sum(int(r["pacientes"] or 0) for r in actividad_medicos),
