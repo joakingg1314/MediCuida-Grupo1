@@ -24,6 +24,7 @@ def create_tables(connect):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titular_dni TEXT NOT NULL,
             autor_dni TEXT NOT NULL,
+            medico_dni TEXT NOT NULL DEFAULT '',
             nombre TEXT NOT NULL,
             forma TEXT NOT NULL,
             dosis TEXT NOT NULL,
@@ -63,6 +64,8 @@ def create_tables(connect):
         existing = {row["name"] for row in db.execute("PRAGMA table_info(tratamientos)")}
         if "medico_telefono" not in existing:
             db.execute("ALTER TABLE tratamientos ADD COLUMN medico_telefono TEXT NOT NULL DEFAULT ''")
+        if "medico_dni" not in existing:
+            db.execute("ALTER TABLE tratamientos ADD COLUMN medico_dni TEXT NOT NULL DEFAULT ''")
 
 
 def string(value, label, minimum=2, maximum=150):
@@ -96,7 +99,7 @@ def target(user, supplied):
     return dni
 
 
-def validated_treatment(data, role, medico_telefono=""):
+def validated_treatment(data, role, medico_telefono="", medico_dni=""):
     if not isinstance(data, dict):
         raise ValueError("Envía un objeto JSON.")
     info = {
@@ -127,10 +130,11 @@ def validated_treatment(data, role, medico_telefono=""):
     if role == "medico":
         info["medico_nombre"] = string(data.get("medico_nombre"),"Nombre del médico",4,120)
         info["medico_telefono"] = str(medico_telefono or "")
+        info["medico_dni"] = str(medico_dni or "")
         info["motivo"] = string(data.get("motivo"),"Motivo del registro",4,400)
         info["indicaciones"] = string(data.get("indicaciones"),"Forma de administración",4,400)
     else:
-        info.update(medico_nombre="",medico_telefono="",motivo="",indicaciones="")
+        info.update(medico_nombre="",medico_telefono="",medico_dni="",motivo="",indicaciones="")
     return info
 
 
@@ -257,7 +261,7 @@ def dispatch(handler,method,path,connect):
         if method=="POST" and path=="/api/tratamientos":
             data=handler.read_data()
             dni=target(user,data.get("dni_paciente"))
-            info=validated_treatment(data,user.get("rol"),user.get("telefono",""))
+            info=validated_treatment(data,user.get("rol"),user.get("telefono",""),user.get("dni",""))
             with connect() as db:
                 if user.get("rol") == "medico" and dni != user["dni"]:
                     patient = db.execute("SELECT dni FROM usuarios WHERE dni=?", (dni,)).fetchone()
@@ -268,8 +272,8 @@ def dispatch(handler,method,path,connect):
                     raise ValueError("Se alcanzó el límite de 60 tratamientos de demostración por usuario.")
                 info.update(titular_dni=dni,autor_dni=user["dni"])
                 cur=db.execute("""INSERT INTO tratamientos
-                    (titular_dni,autor_dni,nombre,forma,dosis,inicio,fin,frecuencia,hora,medico_nombre,medico_telefono,motivo,indicaciones)
-                    VALUES (:titular_dni,:autor_dni,:nombre,:forma,:dosis,:inicio,:fin,:frecuencia,:hora,:medico_nombre,:medico_telefono,:motivo,:indicaciones)""",info)
+                    (titular_dni,autor_dni,medico_dni,nombre,forma,dosis,inicio,fin,frecuencia,hora,medico_nombre,medico_telefono,motivo,indicaciones)
+                    VALUES (:titular_dni,:autor_dni,:medico_dni,:nombre,:forma,:dosis,:inicio,:fin,:frecuencia,:hora,:medico_nombre,:medico_telefono,:motivo,:indicaciones)""",info)
                 db.executemany("INSERT INTO tomas(tratamiento_id,fecha) VALUES(?,?)",[(cur.lastrowid,t) for t in schedule(info)])
                 if user.get("rol") == "medico" and dni != user["dni"]:
                     db.execute("""INSERT INTO avisos
@@ -307,7 +311,7 @@ def dispatch(handler,method,path,connect):
             tid=int(m.group(1))
             data=handler.read_data()
             reason=string(data.get("motivo_modificacion"),"Motivo de la modificación",6,500)
-            info=validated_treatment(data,"medico",user.get("telefono",""))
+            info=validated_treatment(data,"medico",user.get("telefono",""),user.get("dni",""))
             with connect() as db:
                 old=db.execute("SELECT * FROM tratamientos WHERE id=?",(tid,)).fetchone()
                 if not old: error(handler,404,"Tratamiento no encontrado.");return True
@@ -320,7 +324,7 @@ def dispatch(handler,method,path,connect):
                 db.executemany("INSERT INTO tomas(tratamiento_id,fecha) VALUES(?,?)",[(tid,d) for d in new_dates])
                 db.execute("""UPDATE tratamientos SET nombre=:nombre,forma=:forma,dosis=:dosis,
                     inicio=:inicio,fin=:fin,frecuencia=:frecuencia,hora=:hora,
-                    medico_nombre=:medico_nombre,medico_telefono=:medico_telefono,motivo=:motivo,indicaciones=:indicaciones,
+                    medico_nombre=:medico_nombre,medico_telefono=:medico_telefono,medico_dni=:medico_dni,motivo=:motivo,indicaciones=:indicaciones,
                     actualizado_en=CURRENT_TIMESTAMP WHERE id=:id""",{**info,"id":tid})
                 if old["titular_dni"] != user["dni"]:
                     who=info["medico_nombre"]

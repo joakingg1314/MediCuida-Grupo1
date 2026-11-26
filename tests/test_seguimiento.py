@@ -114,6 +114,7 @@ class SeguimientoTest(unittest.TestCase):
         self.assertEqual(created.status, 201, created.result)
         treatment = created.result["tratamiento"]
         self.assertEqual(treatment["medico_telefono"], "987654321")
+        self.assertEqual(treatment["medico_dni"], "30000003")
         self.assertEqual(treatment["titular_dni"], "10000001")
         patient_list = self.call(self.paciente, "GET", "/api/tratamientos")
         self.assertEqual(patient_list.result["titular"]["telefono"], "912345678")

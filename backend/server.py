@@ -239,17 +239,28 @@ class Handler(BaseHTTPRequestHandler):
                 actividad_medicos = [dict(r) for r in c.execute("""
                     SELECT u.dni,
                         COALESCE(
-                            (SELECT MAX(t.medico_nombre) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''),
+                            (SELECT MAX(t.medico_nombre) FROM tratamientos t
+                             WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''
+                               AND (t.medico_dni=u.dni OR (t.medico_dni='' AND u.rol='medico'))),
                             TRIM(COALESCE(u.nombres,'') || ' ' || COALESCE(u.apellidos,'')),
                             'Médico'
                         ) AS nombre,
-                        (SELECT COUNT(*) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '') AS registros,
-                        (SELECT COUNT(*) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni) AS asignados,
-                        (SELECT COUNT(DISTINCT t.titular_dni) FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni) AS pacientes,
+                        (SELECT COUNT(*) FROM tratamientos t
+                         WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''
+                           AND (t.medico_dni=u.dni OR (t.medico_dni='' AND u.rol='medico'))) AS registros,
+                        (SELECT COUNT(*) FROM tratamientos t
+                         WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''
+                           AND (t.medico_dni=u.dni OR (t.medico_dni='' AND u.rol='medico'))
+                           AND t.titular_dni <> t.autor_dni) AS asignados,
+                        (SELECT COUNT(DISTINCT t.titular_dni) FROM tratamientos t
+                         WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''
+                           AND (t.medico_dni=u.dni OR (t.medico_dni='' AND u.rol='medico'))
+                           AND t.titular_dni <> t.autor_dni) AS pacientes,
                         (SELECT COUNT(*) FROM avisos a WHERE a.medico_dni=u.dni) AS modificaciones
                     FROM usuarios u
                     WHERE u.rol='medico'
-                       OR EXISTS (SELECT 1 FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> '')
+                       OR EXISTS (SELECT 1 FROM tratamientos t WHERE t.autor_dni=u.dni AND t.medico_nombre <> ''
+                                  AND (t.medico_dni=u.dni OR (t.medico_dni='' AND u.rol='medico')))
                        OR EXISTS (SELECT 1 FROM avisos a WHERE a.medico_dni=u.dni)
                     ORDER BY registros DESC, nombre
                 """).fetchall()]
@@ -262,6 +273,8 @@ class Handler(BaseHTTPRequestHandler):
                     FROM tratamientos t
                     LEFT JOIN usuarios p ON p.dni=t.titular_dni
                     WHERE t.medico_nombre <> '' AND t.titular_dni <> t.autor_dni
+                      AND (t.medico_dni=t.autor_dni OR (t.medico_dni='' AND EXISTS
+                           (SELECT 1 FROM usuarios u WHERE u.dni=t.autor_dni AND u.rol='medico')))
                     GROUP BY t.autor_dni,t.titular_dni
                     ORDER BY registros DESC, medico, paciente
                 """).fetchall()]
@@ -361,8 +374,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_out(401,{"error":"DNI o contraseña incorrectos."})
             account=user(row); token=secrets.token_urlsafe(32)
             with LOCK: SESSIONS[token]={"expiry":time.time()+SESSION_AGE,"usuario":account}
-            with connect() as c:
-                c.execute("INSERT INTO visitas_pestanas(dni,rol,vista) VALUES(?,?,?)",(account["dni"],account["rol"],"acceso"))
+            try:
+                with connect() as c:
+                    c.execute("INSERT INTO visitas_pestanas(dni,rol,vista) VALUES(?,?,?)",(account["dni"],account["rol"],"acceso"))
+            except Exception:
+                pass  # Un fallo del contador no debe impedir el inicio de sesión.
             return self.json_out(200,{"ok":True,"usuario":account},self.new_cookie(token,SESSION_AGE))
         if path=="/api/medicamentos":
             if not self.auth_medico(): return
