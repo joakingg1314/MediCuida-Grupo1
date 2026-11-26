@@ -47,7 +47,8 @@ def init_db():
                 rol TEXT NOT NULL DEFAULT 'paciente',
                 dni_paciente TEXT,
                 ruc TEXT,
-                puesto TEXT
+                puesto TEXT,
+                telefono TEXT NOT NULL DEFAULT ''
             );
             CREATE TABLE IF NOT EXISTS medicamentos(
                 codigo INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,6 +56,15 @@ def init_db():
                 stock INTEGER NOT NULL CHECK(stock>=0)
             );
             CREATE TABLE IF NOT EXISTS configuracion(clave TEXT PRIMARY KEY, valor TEXT);
+            CREATE TABLE IF NOT EXISTS visitas_pestanas(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dni TEXT NOT NULL,
+                rol TEXT NOT NULL,
+                vista TEXT NOT NULL,
+                visitado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_visitas_vista ON visitas_pestanas(vista);
+            CREATE INDEX IF NOT EXISTS idx_visitas_dni ON visitas_pestanas(dni);
         """)
         # Migración compatible con usuarios registrados en versiones anteriores.
         existing = {row["name"] for row in c.execute("PRAGMA table_info(usuarios)")}
@@ -63,6 +73,7 @@ def init_db():
             ("dni_paciente", "TEXT"),
             ("ruc", "TEXT"),
             ("puesto", "TEXT"),
+            ("telefono", "TEXT NOT NULL DEFAULT ''"),
         ):
             if name not in existing:
                 c.execute(f"ALTER TABLE usuarios ADD COLUMN {name} {ddl}")
@@ -83,7 +94,7 @@ def med(row):
             "stock": row["stock"]}
 
 def user(row):
-    return {k: row[k] for k in ("nombres", "apellidos", "dni", "correo", "rol", "dni_paciente", "ruc", "puesto")}
+    return {k: row[k] for k in ("nombres", "apellidos", "dni", "correo", "rol", "dni_paciente", "ruc", "puesto", "telefono")}
 
 def clean(value, field, minimum=2, maximum=90):
     if not isinstance(value, str):
@@ -92,6 +103,16 @@ def clean(value, field, minimum=2, maximum=90):
     if not minimum <= len(value) <= maximum or any(ord(c)<32 for c in value):
         raise ValueError(f"El campo {field} no es válido.")
     return value
+
+def validate_phone(value):
+    if not isinstance(value, str):
+        raise ValueError("Ingresa un número de celular de contacto.")
+    digits = re.sub(r"\\D", "", value)
+    if len(digits) == 11 and digits.startswith("51"):
+        digits = digits[2:]
+    if not re.fullmatch(r"9[0-9]{8}", digits):
+        raise ValueError("El celular debe tener 9 dígitos y empezar por 9. También puedes escribir +51.")
+    return digits
 
 def validate_med(data):
     result = {k: clean(data.get(k), k, 2, size) for k,size in
@@ -117,6 +138,7 @@ def validate_user(data):
     correo = data.get("correo")
     if not isinstance(correo,str) or len(correo)>120 or not EMAIL.fullmatch(correo.strip()):
         raise ValueError("El correo electrónico no es válido.")
+    telefono = validate_phone(data.get("telefono"))
     password = data.get("contrasena")
     if not isinstance(password,str) or not 8 <= len(password) <= 72 or password != password.strip():
         raise ValueError("La contraseña debe tener entre 8 y 72 caracteres, sin espacios al inicio o final.")
@@ -134,7 +156,7 @@ def validate_user(data):
             raise ValueError("El RUC del establecimiento debe tener exactamente 11 dígitos.")
         datos_rol["ruc"] = ruc
         datos_rol["puesto"] = clean(data.get("puesto"), "puesto", 2, 100)
-    return {**result, **datos_rol, "dni": dni, "correo": correo.strip().lower(), "contrasena":password}
+    return {**result, **datos_rol, "dni": dni, "correo": correo.strip().lower(), "telefono": telefono, "contrasena":password}
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "MediCuidaDemo/3"
@@ -201,6 +223,40 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/api/sesion":
             session=self.current_session()
             return self.json_out(200,{"autenticado":bool(session),"usuario":session["usuario"] if session else None})
+        if path=="/api/dashboard/estadisticas":
+            if not self.auth_medico(): return
+            with connect() as c:
+                total_usuarios = c.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+                pacientes = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('paciente','ambos','medico')").fetchone()[0]
+                cuidadores = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('cuidador','ambos','medico')").fetchone()[0]
+                medicos = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol='medico'").fetchone()[0]
+                visitas = [dict(r) for r in c.execute("""
+                    SELECT vista, COUNT(*) AS visitas, COUNT(DISTINCT dni) AS usuarios
+                    FROM visitas_pestanas GROUP BY vista ORDER BY visitas DESC, vista
+                """).fetchall()]
+                actividad_medicos = [dict(r) for r in c.execute("""
+                    SELECT t.autor_dni AS dni,
+                        COALESCE(NULLIF(MAX(t.medico_nombre),''), MAX(COALESCE(u.nombres,'') || ' ' || COALESCE(u.apellidos,'')), 'Médico') AS nombre,
+                        COUNT(*) AS registros,
+                        SUM(CASE WHEN t.titular_dni <> t.autor_dni THEN 1 ELSE 0 END) AS asignados,
+                        COUNT(DISTINCT CASE WHEN t.titular_dni <> t.autor_dni THEN t.titular_dni END) AS pacientes,
+                        (SELECT COUNT(*) FROM avisos a WHERE a.medico_dni=t.autor_dni) AS modificaciones
+                    FROM tratamientos t
+                    LEFT JOIN usuarios u ON u.dni=t.autor_dni
+                    WHERE t.medico_nombre <> ''
+                    GROUP BY t.autor_dni ORDER BY registros DESC
+                """).fetchall()]
+            return self.json_out(200, {
+                "usuarios": {"total": total_usuarios, "pacientes": pacientes, "cuidadores": cuidadores, "medicos": medicos},
+                "visitas": visitas,
+                "medicos": {
+                    "con_registros": len(actividad_medicos),
+                    "registros": sum(int(r["registros"] or 0) for r in actividad_medicos),
+                    "asignados": sum(int(r["asignados"] or 0) for r in actividad_medicos),
+                    "pacientes": sum(int(r["pacientes"] or 0) for r in actividad_medicos),
+                    "detalle": actividad_medicos
+                }
+            })
         if path=="/api/medicamentos":
             if not self.auth(): return
             with connect() as c: rows=c.execute("SELECT * FROM medicamentos ORDER BY codigo").fetchall()
@@ -226,6 +282,34 @@ class Handler(BaseHTTPRequestHandler):
                     with LOCK: SESSIONS.pop(item.value,None)
             except Exception: pass
             return self.json_out(200,{"ok":True},self.new_cookie("",0))
+        if path=="/api/contacto":
+            if not self.auth(): return
+            try:
+                telefono = validate_phone(self.read_data().get("telefono"))
+            except ValueError as e:
+                return self.json_out(400, {"error": str(e)})
+            session = self.current_session()
+            with connect() as c:
+                c.execute("UPDATE usuarios SET telefono=? WHERE dni=?", (telefono, session["usuario"]["dni"]))
+                row = c.execute("SELECT * FROM usuarios WHERE dni=?", (session["usuario"]["dni"],)).fetchone()
+            if not row: return self.json_out(404, {"error":"No se encontró tu cuenta."})
+            session["usuario"] = user(row)
+            return self.json_out(200, {"usuario":session["usuario"], "mensaje":"Número de contacto actualizado."})
+        if path=="/api/visitas":
+            if not self.auth(): return
+            try:
+                data = self.read_data()
+            except ValueError as e:
+                return self.json_out(400, {"error":str(e)})
+            vista = data.get("vista")
+            permitidas = {"inicio","consulta","dashboard","inventario","tratamientos","historial","ayuda","blog","perfil"}
+            if vista not in permitidas:
+                return self.json_out(400, {"error":"La pestaña indicada no es válida."})
+            session = self.current_session()
+            with connect() as c:
+                c.execute("INSERT INTO visitas_pestanas(dni,rol,vista) VALUES(?,?,?)",
+                          (session["usuario"]["dni"],session["usuario"]["rol"],vista))
+            return self.json_out(201, {"ok":True})
         if path=="/api/register":
             try:
                 data=validate_user(self.read_data())
@@ -234,10 +318,10 @@ class Handler(BaseHTTPRequestHandler):
             digest=hashlib.pbkdf2_hmac("sha256",data["contrasena"].encode(),salt,200000).hex()
             try:
                 with connect() as c:
-                    c.execute("""INSERT INTO usuarios(nombres,apellidos,dni,correo,salt,hash,rol,dni_paciente,ruc,puesto)
-                                 VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                    c.execute("""INSERT INTO usuarios(nombres,apellidos,dni,correo,salt,hash,rol,dni_paciente,ruc,puesto,telefono)
+                                 VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                               (data["nombres"],data["apellidos"],data["dni"],data["correo"],
-                               salt.hex(),digest,data["rol"],data["dni_paciente"],data["ruc"],data["puesto"]))
+                               salt.hex(),digest,data["rol"],data["dni_paciente"],data["ruc"],data["puesto"],data["telefono"]))
             except sqlite3.IntegrityError as e:
                 error=str(e)
                 msg="Ese DNI ya está registrado." if "usuarios.dni" in error else "Ese correo ya está registrado." if "usuarios.correo" in error else "Error al registrar el usuario."

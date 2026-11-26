@@ -32,6 +32,7 @@ def create_tables(connect):
             frecuencia INTEGER NOT NULL,
             hora TEXT NOT NULL,
             medico_nombre TEXT NOT NULL DEFAULT '',
+            medico_telefono TEXT NOT NULL DEFAULT '',
             motivo TEXT NOT NULL DEFAULT '',
             indicaciones TEXT NOT NULL DEFAULT '',
             creado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -59,6 +60,9 @@ def create_tables(connect):
         );
         CREATE INDEX IF NOT EXISTS idx_avisos_titular ON avisos(titular_dni);
         """)
+        existing = {row["name"] for row in db.execute("PRAGMA table_info(tratamientos)")}
+        if "medico_telefono" not in existing:
+            db.execute("ALTER TABLE tratamientos ADD COLUMN medico_telefono TEXT NOT NULL DEFAULT ''")
 
 
 def string(value, label, minimum=2, maximum=150):
@@ -92,7 +96,7 @@ def target(user, supplied):
     return dni
 
 
-def validated_treatment(data, role):
+def validated_treatment(data, role, medico_telefono=""):
     if not isinstance(data, dict):
         raise ValueError("Envía un objeto JSON.")
     info = {
@@ -122,10 +126,11 @@ def validated_treatment(data, role):
     info.update(inicio=start,fin=end,frecuencia=freq,hora=hour)
     if role == "medico":
         info["medico_nombre"] = string(data.get("medico_nombre"),"Nombre del médico",4,120)
+        info["medico_telefono"] = str(medico_telefono or "")
         info["motivo"] = string(data.get("motivo"),"Motivo del registro",4,400)
         info["indicaciones"] = string(data.get("indicaciones"),"Forma de administración",4,400)
     else:
-        info.update(medico_nombre="",motivo="",indicaciones="")
+        info.update(medico_nombre="",medico_telefono="",motivo="",indicaciones="")
     return info
 
 
@@ -144,6 +149,14 @@ def schedule(info):
 
 def serialize_treatment(db, row):
     result=dict(row)
+    try:
+        author = db.execute("SELECT nombres,apellidos,telefono FROM usuarios WHERE dni=?", (row["autor_dni"],)).fetchone()
+    except sqlite3.OperationalError:
+        author = None
+    result["autor_nombre"] = ((author["nombres"] + " " + author["apellidos"]).strip() if author else "")
+    result["autor_telefono"] = (author["telefono"] or "" if author else "")
+    if not result.get("medico_telefono") and result.get("medico_nombre"):
+        result["medico_telefono"] = result["autor_telefono"]
     result["tomas"]=[dict(t) for t in db.execute(
         "SELECT id, fecha, confirmada, confirmada_por FROM tomas WHERE tratamiento_id=? ORDER BY fecha,id",(row["id"],)
     )]
@@ -172,7 +185,15 @@ def dispatch(handler,method,path,connect):
             with connect() as db:
                 rows=db.execute("SELECT * FROM tratamientos WHERE titular_dni=? ORDER BY id DESC",(dni,)).fetchall()
                 meds=[serialize_treatment(db,row) for row in rows]
-            handler.json_out(200,{"dni":dni,"tratamientos":meds})
+                try:
+                    person=db.execute("SELECT nombres,apellidos,telefono FROM usuarios WHERE dni=?",(dni,)).fetchone()
+                except sqlite3.OperationalError:
+                    person=None
+            titular = ({
+                "nombre": (person["nombres"]+" "+person["apellidos"]).strip(),
+                "telefono": person["telefono"] or ""
+            } if person else None)
+            handler.json_out(200,{"dni":dni,"titular":titular,"tratamientos":meds})
             return True
 
         if method == "GET" and path=="/api/historial":
@@ -228,7 +249,7 @@ def dispatch(handler,method,path,connect):
                         return True
                 db.execute("UPDATE usuarios SET rol=?,dni_paciente=? WHERE dni=?",(role,vinculo or None,user["dni"]))
                 updated=db.execute("SELECT * FROM usuarios WHERE dni=?",(user["dni"],)).fetchone()
-            info={key:updated[key] for key in ("nombres","apellidos","dni","correo","rol","dni_paciente","ruc","puesto")}
+            info={key:updated[key] for key in ("nombres","apellidos","dni","correo","rol","dni_paciente","ruc","puesto","telefono")}
             session["usuario"]=info
             handler.json_out(200,{"usuario":info,"mensaje":"El rol se actualizó correctamente."})
             return True
@@ -236,16 +257,26 @@ def dispatch(handler,method,path,connect):
         if method=="POST" and path=="/api/tratamientos":
             data=handler.read_data()
             dni=target(user,data.get("dni_paciente"))
-            info=validated_treatment(data,user.get("rol"))
+            info=validated_treatment(data,user.get("rol"),user.get("telefono",""))
             with connect() as db:
+                if user.get("rol") == "medico" and dni != user["dni"]:
+                    patient = db.execute("SELECT dni FROM usuarios WHERE dni=?", (dni,)).fetchone()
+                    if not patient:
+                        raise ValueError("El paciente debe tener una cuenta registrada en MediCuida antes de asignarle un medicamento.")
                 current=db.execute("SELECT count(*) FROM tratamientos WHERE titular_dni=?",(dni,)).fetchone()[0]
                 if current >= 60:
                     raise ValueError("Se alcanzó el límite de 60 tratamientos de demostración por usuario.")
                 info.update(titular_dni=dni,autor_dni=user["dni"])
                 cur=db.execute("""INSERT INTO tratamientos
-                    (titular_dni,autor_dni,nombre,forma,dosis,inicio,fin,frecuencia,hora,medico_nombre,motivo,indicaciones)
-                    VALUES (:titular_dni,:autor_dni,:nombre,:forma,:dosis,:inicio,:fin,:frecuencia,:hora,:medico_nombre,:motivo,:indicaciones)""",info)
+                    (titular_dni,autor_dni,nombre,forma,dosis,inicio,fin,frecuencia,hora,medico_nombre,medico_telefono,motivo,indicaciones)
+                    VALUES (:titular_dni,:autor_dni,:nombre,:forma,:dosis,:inicio,:fin,:frecuencia,:hora,:medico_nombre,:medico_telefono,:motivo,:indicaciones)""",info)
                 db.executemany("INSERT INTO tomas(tratamiento_id,fecha) VALUES(?,?)",[(cur.lastrowid,t) for t in schedule(info)])
+                if user.get("rol") == "medico" and dni != user["dni"]:
+                    db.execute("""INSERT INTO avisos
+                        (titular_dni,tratamiento_id,medico_dni,medico_nombre,motivo,detalle)
+                        VALUES(?,?,?,?,?,?)""",
+                        (dni,cur.lastrowid,user["dni"],info["medico_nombre"],info["motivo"],
+                         "El médico "+info["medico_nombre"]+" registró el medicamento "+info["nombre"]+". Motivo: "+info["motivo"]))
                 row=db.execute("SELECT * FROM tratamientos WHERE id=?",(cur.lastrowid,)).fetchone()
                 result=serialize_treatment(db,row)
             handler.json_out(201,{"tratamiento":result,"mensaje":"Tratamiento ficticio registrado."})
@@ -276,7 +307,7 @@ def dispatch(handler,method,path,connect):
             tid=int(m.group(1))
             data=handler.read_data()
             reason=string(data.get("motivo_modificacion"),"Motivo de la modificación",6,500)
-            info=validated_treatment(data,"medico")
+            info=validated_treatment(data,"medico",user.get("telefono",""))
             with connect() as db:
                 old=db.execute("SELECT * FROM tratamientos WHERE id=?",(tid,)).fetchone()
                 if not old: error(handler,404,"Tratamiento no encontrado.");return True
@@ -289,7 +320,7 @@ def dispatch(handler,method,path,connect):
                 db.executemany("INSERT INTO tomas(tratamiento_id,fecha) VALUES(?,?)",[(tid,d) for d in new_dates])
                 db.execute("""UPDATE tratamientos SET nombre=:nombre,forma=:forma,dosis=:dosis,
                     inicio=:inicio,fin=:fin,frecuencia=:frecuencia,hora=:hora,
-                    medico_nombre=:medico_nombre,motivo=:motivo,indicaciones=:indicaciones,
+                    medico_nombre=:medico_nombre,medico_telefono=:medico_telefono,motivo=:motivo,indicaciones=:indicaciones,
                     actualizado_en=CURRENT_TIMESTAMP WHERE id=:id""",{**info,"id":tid})
                 if old["titular_dni"] != user["dni"]:
                     who=info["medico_nombre"]

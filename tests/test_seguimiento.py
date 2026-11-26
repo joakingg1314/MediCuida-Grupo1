@@ -43,9 +43,11 @@ class SeguimientoTest(unittest.TestCase):
                 id INTEGER PRIMARY KEY,
                 nombres TEXT, apellidos TEXT, dni TEXT,
                 correo TEXT, salt TEXT, hash TEXT,
-                rol TEXT, dni_paciente TEXT, ruc TEXT, puesto TEXT)""")
-            db.execute("INSERT INTO usuarios(id,nombres,apellidos,dni,correo,salt,hash,rol) VALUES(1,'María','Ejemplo','30000003','fake@example.test',?,?,?)",
+                rol TEXT, dni_paciente TEXT, ruc TEXT, puesto TEXT, telefono TEXT DEFAULT '')""")
+            db.execute("INSERT INTO usuarios(id,nombres,apellidos,dni,correo,salt,hash,rol,telefono) VALUES(1,'María','Ejemplo','30000003','fake@example.test',?,?,?,'987654321')",
                 (salt.hex(),digest,"medico"))
+            db.execute("INSERT INTO usuarios(id,nombres,apellidos,dni,correo,salt,hash,rol,telefono) VALUES(2,'Paciente','Demo','10000001','paciente@example.test',?,?,?,'912345678')",
+                (salt.hex(),digest,"paciente"))
     def tearDown(self):
         self.temp.cleanup()
     def connect(self):
@@ -56,7 +58,7 @@ class SeguimientoTest(unittest.TestCase):
     @staticmethod
     def user(dni,role,linked=None):
         return {"dni":dni,"nombres":"Usuario","apellidos":"Ejemplo","rol":role,"dni_paciente":linked,
-                "correo":"fake@example.test","ruc":None,"puesto":None}
+                "correo":"fake@example.test","ruc":None,"puesto":None,"telefono":"987654321"}
     def call(self, user, method, path, data=None):
         handler = FakeHandler(user,path,data)
         route = path.split("?", 1)[0]
@@ -105,6 +107,19 @@ class SeguimientoTest(unittest.TestCase):
         datos["hora"] = "25:80:00"
         bad = self.call(self.paciente, "POST", "/api/tratamientos", datos)
         self.assertEqual(bad.status, 400)
+
+    def test_medico_asigna_medicamento_y_notifica_al_paciente(self):
+        datos = self.example("10000001")
+        created = self.call(self.medico, "POST", "/api/tratamientos", datos)
+        self.assertEqual(created.status, 201, created.result)
+        treatment = created.result["tratamiento"]
+        self.assertEqual(treatment["medico_telefono"], "987654321")
+        self.assertEqual(treatment["titular_dni"], "10000001")
+        patient_list = self.call(self.paciente, "GET", "/api/tratamientos")
+        self.assertEqual(patient_list.result["titular"]["telefono"], "912345678")
+        alerts = self.call(self.paciente, "GET", "/api/avisos")
+        self.assertEqual(len(alerts.result["avisos"]), 1)
+        self.assertIn("registró el medicamento", alerts.result["avisos"][0]["detalle"])
 
     def test_medico_modifica_hora_con_segundos(self):
         original = self.call(self.medico, "POST", "/api/tratamientos", self.example())
