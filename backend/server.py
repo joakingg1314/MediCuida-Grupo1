@@ -227,8 +227,8 @@ class Handler(BaseHTTPRequestHandler):
             if not self.auth_medico(): return
             with connect() as c:
                 total_usuarios = c.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
-                pacientes = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('paciente','ambos','medico')").fetchone()[0]
-                cuidadores = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('cuidador','ambos','medico')").fetchone()[0]
+                pacientes = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('paciente','ambos')").fetchone()[0]
+                cuidadores = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol IN ('cuidador','ambos')").fetchone()[0]
                 medicos = c.execute("SELECT COUNT(*) FROM usuarios WHERE rol='medico'").fetchone()[0]
                 usuarios_ingresaron = c.execute("SELECT COUNT(DISTINCT dni) FROM visitas_pestanas WHERE vista='acceso'").fetchone()[0]
                 ingresos_totales = c.execute("SELECT COUNT(*) FROM visitas_pestanas WHERE vista='acceso'").fetchone()[0]

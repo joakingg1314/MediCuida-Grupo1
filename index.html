@@ -177,6 +177,19 @@
         <div class="page-top container"><span class="eyebrow">PANEL DE CONTROL · ADMINISTRACIÓN</span><h1 id="dashboard-titulo">Dashboard de gestión</h1><p>Resumen del inventario, actividad de usuarios, visitas por sección y registros realizados por los médicos.</p></div>
         <div class="container page-body">
           <div class="filter-panel dashboard-filters"><div class="field"><label for="categoria-dashboard">Filtrar por categoría</label><select id="categoria-dashboard"><option value="">Todas las categorías</option></select></div><div class="field"><label for="establecimiento-dashboard">Filtrar por establecimiento</label><select id="establecimiento-dashboard"><option value="">Todos los establecimientos</option></select></div><button class="btn btn-soft align-end" id="reiniciar-dashboard" type="button">Restablecer filtros</button></div>
+          <section class="dashboard-section" aria-labelledby="dashboard-users-title">
+            <div class="section-head"><div><span class="eyebrow">COMUNIDAD</span><h2 id="dashboard-users-title">Usuarios registrados</h2></div><p>Los indicadores separan las cuentas por rol para evitar duplicar médicos como pacientes o cuidadores.</p></div>
+            <div class="metric-grid dashboard-user-grid">
+              <article class="metric-card"><p>Total de cuentas</p><strong id="metric-usuarios-total">0</strong><small>Usuarios registrados</small></article>
+              <article class="metric-card"><p>Pacientes</p><strong id="metric-usuarios-pacientes">0</strong><small>Incluye el rol combinado Paciente y Cuidador</small></article>
+              <article class="metric-card"><p>Cuidadores</p><strong id="metric-usuarios-cuidadores">0</strong><small>Incluye el rol combinado Paciente y Cuidador</small></article>
+              <article class="metric-card"><p>Médicos</p><strong id="metric-usuarios-medicos">0</strong><small>Cuentas con rol médico</small></article>
+              <article class="metric-card"><p>Médicos con registros</p><strong id="metric-medicos-activos">0</strong><small>Han registrado tratamientos</small></article>
+              <article class="metric-card"><p>Medicamentos asignados</p><strong id="metric-registros-asignados">0</strong><small>Registros hechos para pacientes</small></article>
+              <article class="metric-card"><p>Usuarios que ingresaron</p><strong id="metric-usuarios-ingresaron">0</strong><small>Cuentas que iniciaron sesión</small></article>
+              <article class="metric-card"><p>Ingresos registrados</p><strong id="metric-ingresos">0</strong><small>Sesiones iniciadas en MediCuida</small></article>
+            </div>
+          </section>
           <section class="dashboard-section" aria-labelledby="dashboard-stock-title">
             <div class="section-head"><div><span class="eyebrow">INVENTARIO</span><h2 id="dashboard-stock-title">Estado de los medicamentos</h2></div><p>Los registros se separan según la cantidad de stock disponible.</p></div>
             <div class="metric-grid dashboard-stock-grid" aria-live="polite">
@@ -191,19 +204,6 @@
               <article class="chart-card"><div class="chart-heading"><h2>Medicamentos por categoría</h2><p>Cantidad de registros del filtro actual</p></div><div id="grafico-categorias" class="bar-chart" role="img" aria-label="Gráfico de barras de medicamentos por categoría"></div></article>
               <article class="chart-card"><div class="chart-heading"><h2>Distribución por disponibilidad</h2><p>Disponible, stock crítico o sin stock</p></div><div class="donut-layout"><div id="grafico-dona" class="donut" role="img" aria-label="Gráfico circular de distribución de disponibilidad"><div class="donut-hole"><strong id="total-dona">0</strong><small>registros</small></div></div><div id="leyenda-dona" class="donut-legend"></div></div></article>
               <article class="chart-card chart-wide"><div class="chart-heading"><h2>Evolución de existencias</h2><p>Serie ilustrativa de los últimos seis períodos; no representa un histórico real</p></div><div class="line-chart-wrap"><svg id="grafico-evolucion" class="line-chart" viewBox="0 0 760 260" role="img" aria-label="Evolución ficticia de existencias en seis períodos" preserveAspectRatio="xMidYMid meet"></svg></div><div id="resumen-evolucion" class="chart-foot" aria-live="polite"></div></article>
-            </div>
-          </section>
-          <section class="dashboard-section" aria-labelledby="dashboard-users-title">
-            <div class="section-head"><div><span class="eyebrow">COMUNIDAD</span><h2 id="dashboard-users-title">Usuarios registrados</h2></div><p>Los médicos también cuentan como usuarios con funciones de paciente y cuidador.</p></div>
-            <div class="metric-grid dashboard-user-grid">
-              <article class="metric-card"><p>Total de cuentas</p><strong id="metric-usuarios-total">0</strong><small>Usuarios registrados</small></article>
-              <article class="metric-card"><p>Pacientes</p><strong id="metric-usuarios-pacientes">0</strong><small>Incluye médicos y rol combinado</small></article>
-              <article class="metric-card"><p>Cuidadores</p><strong id="metric-usuarios-cuidadores">0</strong><small>Incluye médicos y rol combinado</small></article>
-              <article class="metric-card"><p>Médicos</p><strong id="metric-usuarios-medicos">0</strong><small>Cuentas con rol médico</small></article>
-              <article class="metric-card"><p>Médicos con registros</p><strong id="metric-medicos-activos">0</strong><small>Han registrado tratamientos</small></article>
-              <article class="metric-card"><p>Medicamentos asignados</p><strong id="metric-registros-asignados">0</strong><small>Registros hechos para pacientes</small></article>
-              <article class="metric-card"><p>Usuarios que ingresaron</p><strong id="metric-usuarios-ingresaron">0</strong><small>Cuentas que iniciaron sesión</small></article>
-              <article class="metric-card"><p>Ingresos registrados</p><strong id="metric-ingresos">0</strong><small>Sesiones iniciadas en MediCuida</small></article>
             </div>
           </section>
           <section class="dashboard-section">
