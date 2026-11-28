@@ -621,7 +621,7 @@
       document.body.append(link);
       link.click();
       link.remove();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       aviso('El informe Excel actualizado se descargó correctamente.');
     } catch (error) {
       aviso(error.message || 'No se pudo generar el informe Excel.');

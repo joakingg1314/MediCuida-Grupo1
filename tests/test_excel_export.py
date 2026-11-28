@@ -47,7 +47,7 @@ class ExcelExportTest(unittest.TestCase):
             ns = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
             names = [s.attrib["name"] for s in workbook.findall("x:sheets/x:sheet", ns)]
             self.assertEqual(names, ["Dashboard", "Usuarios", "Tratamientos y tomas",
-                                     "Medicamentos", "Estadisticas", "Reportes"])
+                                     "Medicamentos", "Estadísticas", "Reportes"])
             self.assertEqual(len([n for n in archive.namelist() if n.startswith("xl/charts/chart")]), 5)
             self.assertIn("No se exportan DNI", archive.read("xl/worksheets/sheet2.xml").decode("utf-8"))
 
@@ -57,6 +57,9 @@ class ExcelExportTest(unittest.TestCase):
             content = archive.read("xl/worksheets/sheet3.xml").decode("utf-8")
             self.assertIn("Tratamientos y tomas", content)
             self.assertNotIn("dni", content.lower())
+            for name in archive.namelist():
+                if name.endswith(".xml") or name.endswith(".rels"):
+                    ET.fromstring(archive.read(name))
 
 
 if __name__ == "__main__":

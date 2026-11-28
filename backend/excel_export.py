@@ -96,7 +96,9 @@ def collect_report_data(db):
                t.nombre,t.forma,t.dosis,t.inicio,t.fin,t.frecuencia,t.hora,
                t.motivo,t.indicaciones,
                COUNT(tm.id) AS programadas,
-               SUM(CASE WHEN tm.confirmada IS NOT NULL THEN 1 ELSE 0 END) AS confirmadas
+               SUM(CASE WHEN tm.confirmada IS NOT NULL THEN 1 ELSE 0 END) AS confirmadas,
+               GROUP_CONCAT(tm.fecha, ' | ') AS fechas_programadas,
+               GROUP_CONCAT(CASE WHEN tm.confirmada IS NOT NULL THEN tm.fecha || ' -> ' || tm.confirmada ELSE NULL END, ' | ') AS detalle_confirmaciones
         FROM tratamientos t
         LEFT JOIN usuarios p ON p.dni=t.titular_dni
         LEFT JOIN usuarios a ON a.dni=t.autor_dni
@@ -241,8 +243,9 @@ def _sheet_xml(rows, widths, freeze_rows=0, auto_filter=None, merges=None, drawi
         '<sheetViews><sheetView workbookViewId="0">'
         f'{pane}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="19"/>'
         f'<cols>{cols_xml}</cols><sheetData>{"".join(row_xml)}</sheetData>'
-        f'{filter_xml}{merges_xml}{drawing_xml}'
+        f'{filter_xml}{merges_xml}'
         '<pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>'
+        f'{drawing_xml}'
         '</worksheet>'
     )
 
@@ -444,7 +447,8 @@ def build_workbook(data):
     treatment_records = [
         [x["id"], x["paciente"], x["registrado_por"], x["medico"], x["nombre"], x["forma"],
          x["dosis"], x["inicio"], x["fin"], x["frecuencia"], x["programadas"], x["confirmadas"],
-         x["pendientes"], x["seguimiento"], x["motivo"], x["indicaciones"]]
+         x["pendientes"], x["seguimiento"], x["motivo"], x["indicaciones"],
+         x["fechas_programadas"], x["detalle_confirmaciones"]]
         for x in treatments
     ]
 
@@ -482,8 +486,8 @@ def build_workbook(data):
         "Registros de demostración almacenados en MediCuida. Se incluyen datos necesarios para el seguimiento; el prototipo no debe utilizarse con información clínica real.",
         ["ID", "Paciente", "Registrado por", "Médico", "Medicamento", "Forma", "Dosis",
          "Inicio", "Fin", "Tomas/día", "Programadas", "Confirmadas", "Pendientes",
-         "Seguimiento", "Motivo", "Indicaciones"],
-        treatment_records, [9, 25, 25, 24, 26, 18, 22, 14, 14, 12, 13, 13, 12, 16, 36, 38]
+         "Seguimiento", "Motivo", "Indicaciones", "Fechas programadas", "Confirmaciones (fecha / hora)"],
+        treatment_records, [9, 25, 25, 24, 26, 18, 22, 14, 14, 12, 13, 13, 12, 16, 36, 38, 38, 42]
     )
     reports_sheet = _data_sheet(
         "Reportes consolidados",
@@ -493,7 +497,7 @@ def build_workbook(data):
         report_records, [24, 27, 25, 28, 14, 16, 15, 16]
     )
 
-    stats = _empty_matrix(24, 14)
+    stats = _empty_matrix(max(15, 4 + max(4, 3, len(visits), len(data['monthly_visits']), len(doctors))), 14)
     stats[0][0] = ("Estadísticas de MediCuida", 1)
     stats[1][0] = ("Agregados calculados desde los registros existentes al momento de la exportación.", 2)
     _block(stats, 3, 1, "Usuarios por rol", ["Rol", "Cuentas"], [
@@ -564,7 +568,7 @@ def build_workbook(data):
     month_values = [int(x["visitas"] or 0) for x in data["monthly_visits"]] or [0]
 
     charts = [
-        _chart_xml("bar", "Usuarios por rol", "'Estadisticas'!A5:A8", "'Estadisticas'!B5:B8", role_categories, role_values),
+        _chart_xml("bar", "Usuarios por rol", "'Estadísticas'!A5:A8", "'Estadisticas'!B5:B8", role_categories, role_values),
         _chart_xml("pie", "Disponibilidad del inventario", "'Estadisticas'!D5:D7", "'Estadisticas'!E5:E7", stock_categories, stock_values),
         _chart_xml("bar", "Visitas por pestaña", f"'Estadisticas'!G5:G{4+len(visit_categories)}",
                    f"'Estadisticas'!H5:H{4+len(visit_categories)}", visit_categories, visit_values),
@@ -577,7 +581,7 @@ def build_workbook(data):
                             (8, 27, 15, 42), (0, 43, 7, 58)])
 
     sheet_files = [dashboard_sheet, users_sheet, treatments_sheet, medicines_sheet, stats_sheet, reports_sheet]
-    sheet_names = ["Dashboard", "Usuarios", "Tratamientos y tomas", "Medicamentos", "Estadisticas", "Reportes"]
+    sheet_names = ["Dashboard", "Usuarios", "Tratamientos y tomas", "Medicamentos", "Estadísticas", "Reportes"]
     overrides = [
         '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
         '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>',
