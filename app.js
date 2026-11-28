@@ -598,6 +598,39 @@
     $('#categoria-dashboard').value='';$('#establecimiento-dashboard').value='';mostrarDashboard();
   });
 
+  $('#exportar-dashboard-excel').addEventListener('click', async () => {
+    const boton = $('#exportar-dashboard-excel');
+    const textoOriginal = boton.textContent;
+    boton.disabled = true;
+    boton.textContent = 'Generando Excel...';
+    try {
+      const response = await fetch('/api/dashboard/exportar-excel', { credentials: 'same-origin' });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'No se pudo generar el archivo Excel.');
+      }
+      const blob = await response.blob();
+      if (!blob.size) throw new Error('El servidor devolvió un archivo vacío.');
+      const disposition = response.headers.get('Content-Disposition') || '';
+      const match = disposition.match(/filename="?([^";]+)"?/i);
+      const filename = match ? match[1] : 'MediCuida_Reporte.xlsx';
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      aviso('El informe Excel actualizado se descargó correctamente.');
+    } catch (error) {
+      aviso(error.message || 'No se pudo generar el informe Excel.');
+    } finally {
+      boton.disabled = false;
+      boton.textContent = textoOriginal;
+    }
+  });
+
   // ------------------------ CRUD DE INVENTARIO · API con respaldo PostgreSQL ------------------------
   function actualizarVistaPreviaStock() {
     const campo = $('#med-stock');

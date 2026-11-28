@@ -17,6 +17,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 import seguimiento
 import persistencia
+import excel_export
+from datetime import datetime
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(__file__).resolve().parent / "datos"
@@ -223,6 +225,24 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/api/sesion":
             session=self.current_session()
             return self.json_out(200,{"autenticado":bool(session),"usuario":session["usuario"] if session else None})
+        if path=="/api/dashboard/exportar-excel":
+            if not self.auth_medico(): return
+            try:
+                with connect() as c:
+                    report_data = excel_export.collect_report_data(c)
+                payload = excel_export.build_workbook(report_data)
+                filename = "MediCuida_Reporte_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".xlsx"
+                self.send_response(200)
+                self.headers_common()
+                self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+            except Exception as exc:
+                print("No se pudo generar el informe Excel:", type(exc).__name__, flush=True)
+                return self.json_out(500, {"error":"No se pudo generar el Excel. Revisa que las estadísticas estén disponibles e inténtalo nuevamente."})
         if path=="/api/dashboard/estadisticas":
             if not self.auth_medico(): return
             with connect() as c:
